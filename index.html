@@ -146,7 +146,7 @@ footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-f
 <header>
   <div class="logo">Site<span>Crawler</span></div>
   <div class="tag">Drupal Migration Tool</div>
-  <div class="tag" style="background:#1a3a2a;border-color:#2ea04355;color:#56d364;margin-left:auto">v2.5</div>
+  <div class="tag" style="background:#1a3a2a;border-color:#2ea04355;color:#56d364;margin-left:auto">v2.6</div>
   <div class="tag" style="background:#1a3a2a;border-color:#2ea04355;color:#56d364;margin-left:auto"></div>
 </header>
 
@@ -714,15 +714,17 @@ function generatePageHTML(url, info, sitename, primaryColor, navstyle) {
   content = content.replace(/<h1[^>]*>.*?<\/h1>/is, '');
 
   // Rewrite all internal links to relative paths
-  const originEsc = baseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  content = content.replace(
-    new RegExp('href=["\'](https?:\/\/' + new URL(baseUrl).hostname.replace(/\./g,'\\.') + ')([^"\']*)["\']/gi,  'g'),
-    (match, origin, path) => {
-      const clean = path.replace(/\/$/, '') || '/';
-      if (clean === '/' || clean === '') return 'href="/"';
-      return 'href="' + clean + '/"';
-    }
-  );
+  const hostname = new URL(baseUrl).hostname;
+  content = content.replace(/href="https?:\/\/[^"]*"/gi, (match) => {
+    try {
+      const u = new URL(match.slice(6, -1));
+      if (u.hostname === hostname) {
+        const p = u.pathname.replace(/\/$/, '') || '/';
+        return 'href="' + (p === '/' ? '/' : p + '/') + '"';
+      }
+    } catch {}
+    return match;
+  });
   const desc = info.desc || '';
   const year = new Date().getFullYear();
 
@@ -884,6 +886,12 @@ function generateHtaccess() {
 }
 
 async function exportStaticSite() {
+  // Check JSZip loaded
+  if (typeof JSZip === 'undefined') {
+    alert('JSZip library failed to load. Check your internet connection and try refreshing the page.');
+    return;
+  }
+
   const total = Object.keys(pages).length;
   if (total === 0) { alert('No pages crawled yet. Run a crawl first.'); return; }
 
@@ -895,6 +903,8 @@ async function exportStaticSite() {
   const prog = document.getElementById('export-progress');
   btn.disabled = true;
   btn.textContent = 'Building ZIP…';
+
+  try {
 
   const zip = new JSZip();
   const assets = zip.folder('assets');
@@ -930,6 +940,14 @@ async function exportStaticSite() {
   a.href = URL.createObjectURL(blob);
   a.download = 'static-site.zip';
   a.click();
+
+  } catch(err) {
+    prog.textContent = 'Error: ' + err.message;
+    btn.disabled = false;
+    btn.textContent = '📦 Download Static Site ZIP';
+    alert('Export failed: ' + err.message);
+    console.error(err);
+  }
 }
 </script>
 </body>
