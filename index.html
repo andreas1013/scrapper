@@ -146,7 +146,7 @@ footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-f
 <header>
   <div class="logo">Site<span>Crawler</span></div>
   <div class="tag">Drupal Migration Tool</div>
-  <div class="tag" style="background:#1a3a2a;border-color:#2ea04355;color:#56d364;margin-left:auto">v2.2</div>
+  <div class="tag" style="background:#1a3a2a;border-color:#2ea04355;color:#56d364;margin-left:auto">v2.3</div>
   <div class="tag" style="background:#1a3a2a;border-color:#2ea04355;color:#56d364;margin-left:auto"></div>
 </header>
 
@@ -201,6 +201,7 @@ footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-f
       <div class="tabs">
         <div class="tab active" onclick="showTab('tree',this)">🌳 Page Tree</div>
         <div class="tab" onclick="showTab('redir',this)">🔀 Redirect Map</div>
+        <div class="tab" onclick="showTab('export',this)">📦 Export Static Site</div>
         <div class="tab" onclick="showTab('json',this)">📋 JSON</div>
       </div>
       <div class="panel-content">
@@ -232,6 +233,59 @@ footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-f
             <tbody id="redir-body"></tbody>
           </table>
         </div>
+        <div class="pane" id="pane-export">
+          <div class="note"><strong>How it works:</strong> Generates a full ZIP file — one <code style="color:var(--accent)">.html</code> file per crawled page, a shared <code style="color:var(--accent)">style.css</code>, and an <code style="color:var(--accent)">.htaccess</code> with your 301 redirects. Upload the ZIP to your Cloudways server and extract it into the site root.</div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+            <div class="card" style="margin:0">
+              <h2 style="font-size:.85rem;margin-bottom:.75rem">🎨 Site Template Options</h2>
+              <div class="field">
+                <label>Site name (used in &lt;title&gt; tags)</label>
+                <input type="text" id="exp-sitename" value="Pregnancy to Parenting Australia" />
+              </div>
+              <div class="field">
+                <label>Primary colour (hex)</label>
+                <input type="text" id="exp-color" value="#2c7a6e" />
+              </div>
+              <div class="field" style="margin:0">
+                <label>Navigation style</label>
+                <select id="exp-navstyle" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:.85rem;padding:.6rem .9rem;outline:none">
+                  <option value="topbar">Top navigation bar</option>
+                  <option value="sidebar">Left sidebar</option>
+                </select>
+              </div>
+            </div>
+            <div class="card" style="margin:0">
+              <h2 style="font-size:.85rem;margin-bottom:.75rem">📁 What gets generated</h2>
+              <div style="font-size:.8rem;color:var(--muted);font-family:var(--mono);line-height:1.9">
+                <div>📄 <strong style="color:var(--text)">index.html</strong> — homepage</div>
+                <div>📁 <strong style="color:var(--text)">about/index.html</strong> — sub-pages</div>
+                <div>📁 <strong style="color:var(--text)">blog/index.html</strong></div>
+                <div>🎨 <strong style="color:var(--text)">assets/style.css</strong></div>
+                <div>⚙️ <strong style="color:var(--text)">.htaccess</strong> — 301 redirects</div>
+                <div>📋 <strong style="color:var(--text)">migration-map.html</strong> — reference</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+            <button class="btn primary" onclick="exportStaticSite()" id="export-btn" style="font-size:1rem;padding:.75rem 2rem">📦 Download Static Site ZIP</button>
+            <div id="export-progress" style="font-family:var(--mono);font-size:.8rem;color:var(--muted)"></div>
+          </div>
+
+          <div style="margin-top:1.5rem;padding:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px">
+            <p style="font-size:.82rem;font-weight:700;margin-bottom:.5rem">🚀 Cloudways deployment steps</p>
+            <ol style="font-size:.8rem;color:var(--muted);line-height:2;padding-left:1.25rem">
+              <li>Create a new <strong style="color:var(--text)">PHP application</strong> on Cloudways (or use a blank HTML app)</li>
+              <li>Download the ZIP from this button</li>
+              <li>Upload ZIP via <strong style="color:var(--text)">SFTP</strong> or Cloudways File Manager into <code style="color:var(--accent)">public_html/</code></li>
+              <li>Extract the ZIP — your site structure will be in place</li>
+              <li>The <code style="color:var(--accent)">.htaccess</code> handles all 301 redirects automatically</li>
+              <li>Review each page and replace placeholder content with your real content</li>
+            </ol>
+          </div>
+        </div>
+
         <div class="pane" id="pane-json">
           <div style="display:flex;justify-content:flex-end;margin-bottom:.75rem">
             <button class="btn sm" onclick="downloadJSON()">⬇ Download JSON</button>
@@ -606,6 +660,256 @@ function downloadJSON(){
   updateJSON();dl('site-pages.json',document.getElementById('json-out').textContent,'application/json');
 }
 function dl(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();}
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+// ── STATIC SITE EXPORT ────────────────────────────────────────────────────
+function buildNavHTML(navstyle, sitename, primaryColor, currentUrl) {
+  const navItems = Object.entries(pages)
+    .filter(([url, info]) => info.isNav || navUrls.has(url))
+    .filter(([url, info]) => info.depth <= 1)
+    .map(([url, info]) => {
+      const path = urlToPath(url);
+      const active = url === currentUrl ? ' class="active"' : '';
+      return `<li><a href="/${path}"${active}>${info.title || url}</a></li>`;
+    }).join('\n      ');
+
+  if (navstyle === 'sidebar') {
+    return `<nav class="sidebar"><div class="site-brand"><a href="/">${sitename}</a></div><ul>${navItems}</ul></nav>`;
+  }
+  return `<nav class="topnav"><div class="site-brand"><a href="/">${sitename}</a></div><ul>${navItems}</ul></nav>`;
+}
+
+function urlToPath(url) {
+  try {
+    let path = new URL(url).pathname.replace(/^\//, '').replace(/\/$/, '');
+    if (!path) return 'index.html';
+    return path + '/index.html';
+  } catch { return 'index.html'; }
+}
+
+function generatePageHTML(url, info, sitename, primaryColor, navstyle) {
+  const nav = buildNavHTML(navstyle, sitename, primaryColor, url);
+  const isTopbar = navstyle === 'topbar';
+  const bodyClass = isTopbar ? 'has-topnav' : 'has-sidebar';
+
+  // Breadcrumbs
+  const parts = new URL(url).pathname.split('/').filter(Boolean);
+  let crumbs = '<a href="/">Home</a>';
+  let cumPath = '';
+  parts.forEach((p, i) => {
+    cumPath += '/' + p;
+    if (i < parts.length - 1) crumbs += ` &rsaquo; <a href="${cumPath}/">${p}</a>`;
+    else crumbs += ` &rsaquo; <span>${info.title}</span>`;
+  });
+
+  const content = info.contentHTML || '<p>Content coming soon.</p>';
+  const desc = info.desc || '';
+  const year = new Date().getFullYear();
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${info.title} — ${sitename}</title>
+${desc ? `<meta name="description" content="${desc.replace(/"/g,'&quot;')}">` : ''}
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body class="${bodyClass}">
+  ${nav}
+  <div class="page-wrapper">
+    <main class="main-content">
+      ${parts.length > 0 ? `<div class="breadcrumb">${crumbs}</div>` : ''}
+      <h1 class="page-title">${info.title}</h1>
+      <div class="page-body">
+        ${content}
+      </div>
+    </main>
+    <footer class="site-footer">
+      <p>&copy; ${year} ${sitename}. All rights reserved.</p>
+    </footer>
+  </div>
+</body>
+</html>`;
+}
+
+function generateCSS(primaryColor, navstyle) {
+  return `/* Generated by SiteCrawler Migration Tool */
+:root {
+  --primary: ${primaryColor};
+  --primary-light: ${primaryColor}22;
+  --text: #1a1a2e;
+  --muted: #555;
+  --bg: #f9f9f7;
+  --surface: #ffffff;
+  --border: #e0e0e0;
+  --nav-height: 64px;
+  --sidebar-width: 260px;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+}
+
+/* ── TOP NAV ── */
+.topnav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: var(--nav-height);
+  background: var(--primary);
+  display: flex; align-items: center; gap: 2rem;
+  padding: 0 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+.topnav .site-brand a {
+  color: #fff; font-size: 1.2rem; font-weight: 700; text-decoration: none; white-space: nowrap;
+}
+.topnav ul { display: flex; gap: .25rem; list-style: none; flex-wrap: wrap; }
+.topnav ul a {
+  color: rgba(255,255,255,.85); text-decoration: none;
+  padding: .4rem .75rem; border-radius: 6px; font-size: .9rem;
+  transition: background .15s, color .15s;
+}
+.topnav ul a:hover, .topnav ul a.active { background: rgba(255,255,255,.2); color: #fff; }
+.has-topnav .page-wrapper { padding-top: var(--nav-height); }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-width);
+  background: var(--surface); border-right: 1px solid var(--border);
+  overflow-y: auto; padding: 1.5rem 0;
+}
+.sidebar .site-brand { padding: 0 1.25rem 1.25rem; border-bottom: 1px solid var(--border); margin-bottom: .75rem; }
+.sidebar .site-brand a { color: var(--primary); font-size: 1.1rem; font-weight: 700; text-decoration: none; }
+.sidebar ul { list-style: none; }
+.sidebar ul a {
+  display: block; padding: .5rem 1.25rem; color: var(--muted);
+  text-decoration: none; font-size: .9rem; border-left: 3px solid transparent;
+  transition: all .15s;
+}
+.sidebar ul a:hover, .sidebar ul a.active {
+  color: var(--primary); border-left-color: var(--primary); background: var(--primary-light);
+}
+.has-sidebar .page-wrapper { margin-left: var(--sidebar-width); }
+
+/* ── PAGE LAYOUT ── */
+.page-wrapper { min-height: 100vh; display: flex; flex-direction: column; }
+.main-content { flex: 1; max-width: 860px; margin: 0 auto; padding: 2.5rem 2rem; width: 100%; }
+
+.breadcrumb { font-size: .8rem; color: var(--muted); margin-bottom: 1.25rem; }
+.breadcrumb a { color: var(--primary); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
+.page-title {
+  font-size: 2rem; font-weight: 700; color: var(--text);
+  margin-bottom: 1.5rem; padding-bottom: 1rem;
+  border-bottom: 2px solid var(--primary);
+}
+
+.page-body { font-size: 1rem; }
+.page-body h2 { font-size: 1.35rem; font-weight: 700; margin: 1.75rem 0 .75rem; color: var(--text); }
+.page-body h3 { font-size: 1.1rem; font-weight: 700; margin: 1.25rem 0 .5rem; color: var(--text); }
+.page-body p { margin-bottom: 1rem; }
+.page-body ul, .page-body ol { margin: .5rem 0 1rem 1.5rem; }
+.page-body li { margin-bottom: .4rem; }
+.page-body a { color: var(--primary); }
+.page-body a:hover { text-decoration: underline; }
+.page-body img { max-width: 100%; border-radius: 8px; margin: 1rem 0; }
+.page-body table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+.page-body th, .page-body td { border: 1px solid var(--border); padding: .6rem .75rem; }
+.page-body th { background: var(--primary-light); font-weight: 700; }
+.page-body blockquote { border-left: 4px solid var(--primary); padding: .75rem 1.25rem; color: var(--muted); margin: 1rem 0; background: var(--primary-light); border-radius: 0 6px 6px 0; }
+
+/* ── FOOTER ── */
+.site-footer {
+  background: var(--primary); color: rgba(255,255,255,.8);
+  text-align: center; padding: 1.5rem;
+  font-size: .85rem; margin-top: auto;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .has-sidebar .page-wrapper { margin-left: 0; }
+  .topnav ul { display: none; }
+}
+`;
+}
+
+function generateHtaccess() {
+  const urls = Object.keys(pages).sort();
+  let out = '# 301 Redirects — Generated by SiteCrawler\n';
+  out += 'RewriteEngine On\n\n';
+  out += '# Remove trailing slashes\n';
+  out += 'RewriteCond %{REQUEST_FILENAME} !-d\n';
+  out += 'RewriteRule ^(.*)/$ /$1 [R=301,L]\n\n';
+  out += '# Page redirects\n';
+  urls.forEach(url => {
+    try {
+      const slug = new URL(url).pathname;
+      if (slug && slug !== '/') {
+        out += `Redirect 301 ${slug} /${urlToPath(url).replace('/index.html','')}\n`;
+      }
+    } catch {}
+  });
+  return out;
+}
+
+async function exportStaticSite() {
+  const total = Object.keys(pages).length;
+  if (total === 0) { alert('No pages crawled yet. Run a crawl first.'); return; }
+
+  const sitename = document.getElementById('exp-sitename').value || 'My Site';
+  const primaryColor = document.getElementById('exp-color').value || '#2c7a6e';
+  const navstyle = document.getElementById('exp-navstyle').value;
+
+  const btn = document.getElementById('export-btn');
+  const prog = document.getElementById('export-progress');
+  btn.disabled = true;
+  btn.textContent = 'Building ZIP…';
+
+  const zip = new JSZip();
+  const assets = zip.folder('assets');
+
+  // CSS
+  assets.file('style.css', generateCSS(primaryColor, navstyle));
+
+  // .htaccess
+  zip.file('.htaccess', generateHtaccess());
+
+  // Generate each page
+  let count = 0;
+  for (const [url, info] of Object.entries(pages)) {
+    count++;
+    prog.textContent = `Generating ${count}/${total}: ${info.title || url}`;
+    const html = generatePageHTML(url, info, sitename, primaryColor, navstyle);
+    const filePath = urlToPath(url);
+    zip.file(filePath, html);
+  }
+
+  // Migration reference map (simple HTML)
+  let mapRows = Object.entries(pages).map(([url, info]) => `<tr><td>${info.title}</td><td><a href="${url}" target="_blank">${url}</a></td><td>${new URL(url).pathname}</td></tr>`).join('');
+  zip.file('migration-map.html', `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Migration Map</title><style>body{font-family:sans-serif;padding:2rem}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:.5rem .75rem;text-align:left}th{background:#f5f5f5}</style></head><body><h1>Migration Map</h1><p>Generated by SiteCrawler — ${new Date().toLocaleString()}</p><table><thead><tr><th>Page Title</th><th>Old URL</th><th>Old Path</th></tr></thead><tbody>${mapRows}</tbody></table></body></html>`);
+
+  prog.textContent = 'Compressing ZIP…';
+  const blob = await zip.generateAsync({type:'blob', compression:'DEFLATE', compressionOptions:{level:6}});
+
+  prog.textContent = `Done! ${total} pages → ZIP ready.`;
+  btn.disabled = false;
+  btn.textContent = '📦 Download Static Site ZIP';
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'static-site.zip';
+  a.click();
+}
 </script>
 </body>
 </html>
