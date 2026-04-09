@@ -8,171 +8,136 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&display=swap');
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
-:root{
-  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;
-  --border:#30363d;--accent:#58a6ff;--accent2:#3fb950;
-  --accent3:#f78166;--warn:#e3b341;
-  --text:#e6edf3;--muted:#7d8590;
-  --font:'Syne',sans-serif;--mono:'JetBrains Mono',monospace;
-}
-
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#21262d;--border:#30363d;--accent:#58a6ff;--accent2:#3fb950;--accent3:#f78166;--text:#e6edf3;--muted:#7d8590;--font:'Syne',sans-serif;--mono:'JetBrains Mono',monospace}
 body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex;flex-direction:column}
-
-/* ── HEADER ── */
 header{background:var(--surface);border-bottom:1px solid var(--border);padding:1.25rem 2rem;display:flex;align-items:center;gap:1rem}
 .logo{font-size:1.5rem;font-weight:800;color:var(--accent);letter-spacing:-.02em}
 .logo span{color:var(--muted);font-weight:400}
 .tag{background:#1f6feb22;border:1px solid #1f6feb55;color:#79c0ff;font-size:.7rem;font-family:var(--mono);padding:.2rem .6rem;border-radius:20px}
-
-/* ── SETUP PANEL ── */
 .setup{padding:2rem;max-width:780px;margin:0 auto;width:100%}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.25rem}
-.card h2{font-size:1rem;font-weight:700;margin-bottom:1rem;color:var(--text)}
-.step-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--accent);color:#000;border-radius:50%;font-size:.75rem;font-weight:800;margin-right:.5rem;flex-shrink:0}
-
+.card h2{font-size:1rem;font-weight:700;margin-bottom:1rem}
+.step-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--accent);color:#000;border-radius:50%;font-size:.75rem;font-weight:800;margin-right:.5rem}
 label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:.4rem;font-family:var(--mono)}
-input[type=text],input[type=url]{
-  width:100%;background:var(--surface2);border:1px solid var(--border);
-  border-radius:8px;color:var(--text);font-family:var(--mono);
-  font-size:.85rem;padding:.6rem .9rem;outline:none;transition:border-color .15s;
-}
+input[type=text],input[type=url]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:.85rem;padding:.6rem .9rem;outline:none;transition:border-color .15s}
 input:focus{border-color:var(--accent)}
 .input-note{font-size:.75rem;color:var(--muted);margin-top:.4rem;font-family:var(--mono)}
 .input-note a{color:var(--accent);text-decoration:none}
-.input-note a:hover{text-decoration:underline}
-
-.field{margin-bottom:1rem}
-.field:last-child{margin-bottom:0}
-
-.row{display:flex;gap:1rem;align-items:flex-end}
-.row .field{flex:1}
-
-.btn{
-  padding:.6rem 1.5rem;border-radius:8px;border:1px solid var(--border);
-  background:var(--surface2);color:var(--text);cursor:pointer;
-  font-family:var(--font);font-size:.9rem;font-weight:700;
-  transition:all .15s;white-space:nowrap;
-}
+.field{margin-bottom:1rem}.field:last-child{margin-bottom:0}
+.row{display:flex;gap:1rem;align-items:flex-end}.row .field{flex:1}
+.btn{padding:.6rem 1.5rem;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-family:var(--font);font-size:.9rem;font-weight:700;transition:all .15s;white-space:nowrap}
 .btn:hover{background:var(--accent);border-color:var(--accent);color:#000}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#000}
-.btn.primary:hover{opacity:.85}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#000}.btn.primary:hover{opacity:.85}
 .btn.danger{background:#da3633;border-color:#da3633;color:#fff}
 .btn.sm{padding:.4rem .9rem;font-size:.8rem}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-
-.worker-test{display:flex;gap:.75rem;align-items:flex-end;margin-top:.75rem}
-.worker-test .field{flex:1;margin:0}
-#worker-status{font-size:.78rem;font-family:var(--mono);padding:.3rem .7rem;border-radius:6px;margin-top:.5rem}
+#worker-status{font-size:.78rem;font-family:var(--mono);padding:.3rem .7rem;border-radius:6px;margin-top:.5rem;display:none}
 .status-ok{background:#1a3a2a;color:#56d364;border:1px solid #2ea043}
 .status-err{background:#3a1a1a;color:#f85149;border:1px solid #da3633}
 .status-testing{background:#1a2a3a;color:#79c0ff;border:1px solid #388bfd}
-
-/* ── CRAWLER PROGRESS ── */
 #app{display:none;flex-direction:column;height:calc(100vh - 64px)}
-.app-top{padding:1rem 1.5rem;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.app-top{padding:.85rem 1.5rem;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
 .app-top .target{font-family:var(--mono);font-size:.82rem;color:var(--muted)}
 .app-top .target strong{color:var(--accent)}
 .progress-wrap{flex:1;min-width:200px}
 .progress-bar-track{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
 .progress-bar-fill{height:100%;background:var(--accent2);border-radius:3px;transition:width .3s;width:0}
 .progress-label{font-size:.75rem;color:var(--muted);font-family:var(--mono);margin-top:.3rem}
-
 .app-body{display:flex;flex:1;overflow:hidden}
-
-/* ── LOG PANEL ── */
-.log-panel{width:340px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
-.log-panel h3{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:.75rem 1rem;border-bottom:1px solid var(--border)}
-.log-scroll{flex:1;overflow-y:auto;padding:.5rem}
-.log-entry{font-family:var(--mono);font-size:.72rem;padding:.2rem .4rem;border-radius:4px;display:flex;gap:.5rem;align-items:baseline}
-.log-entry.ok{color:var(--accent2)}
-.log-entry.skip{color:var(--muted)}
-.log-entry.err{color:var(--accent3)}
-.log-entry.nav{color:var(--accent)}
-.log-num{color:var(--muted);min-width:28px;text-align:right}
+.log-panel{width:290px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.log-panel h3{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:.65rem 1rem;border-bottom:1px solid var(--border)}
+.log-scroll{flex:1;overflow-y:auto;padding:.4rem}
+.log-entry{font-family:var(--mono);font-size:.68rem;padding:.18rem .4rem;border-radius:3px;display:flex;gap:.4rem;align-items:baseline}
+.log-entry.ok{color:var(--accent2)}.log-entry.skip{color:var(--muted)}.log-entry.err{color:var(--accent3)}.log-entry.nav{color:var(--accent)}
+.log-num{color:var(--muted);min-width:26px;text-align:right;flex-shrink:0}
 .log-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* ── RESULTS PANEL ── */
 .results-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
-
 .tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface)}
-.tab{padding:.65rem 1.25rem;cursor:pointer;font-size:.82rem;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;user-select:none}
-.tab:hover{color:var(--text)}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-
+.tab{padding:.6rem 1.1rem;cursor:pointer;font-size:.8rem;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;user-select:none}
+.tab:hover{color:var(--text)}.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .panel-content{flex:1;overflow-y:auto;padding:1.25rem 1.5rem}
-.pane{display:none}
-.pane.active{display:block}
-
-/* ── TREE ── */
+.pane{display:none}.pane.active{display:block}
 .tree-actions{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
-#q{
-  flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);
-  border-radius:6px;color:var(--text);font-family:var(--mono);font-size:.8rem;
-  padding:.4rem .75rem;outline:none;
-}
+#q{flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:.8rem;padding:.4rem .75rem;outline:none}
 #q:focus{border-color:var(--accent)}
-
+.stats{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.stat{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.5rem .9rem;min-width:100px;text-align:center}
+.stat-v{font-size:1.4rem;font-weight:800;color:var(--accent);font-family:var(--mono)}
+.stat-l{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 .tree{font-family:var(--mono);font-size:.79rem}
 .tnode{margin-left:var(--in,0px)}
-.nrow{
-  display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem;
-  border-radius:6px;border-left:2px solid transparent;cursor:default;
-}
+.nrow{display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem;border-radius:6px;border-left:2px solid transparent;cursor:default}
 .has-ch .nrow{cursor:pointer}
 .has-ch .nrow:hover{background:var(--surface2);border-left-color:var(--accent)}
 .tog{width:12px;text-align:center;font-size:.7rem;color:var(--muted);transition:transform .2s;flex-shrink:0}
 .tog.leaf{color:var(--border)}
-.has-ch.open > .nrow .tog{transform:rotate(90deg)}
+.has-ch.open>.nrow .tog{transform:rotate(90deg)}
 .nbadge{font-size:.6rem;font-weight:700;padding:.1rem .35rem;border-radius:3px;flex-shrink:0;font-family:var(--font)}
-.nbadge.nav{background:#1f6feb;color:#79c0ff}
-.nbadge.page{background:#1a3a2a;color:#56d364}
-.nlink{color:var(--text);text-decoration:none;font-weight:600;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
+.nbadge.nav{background:#1f6feb;color:#79c0ff}.nbadge.page{background:#1a3a2a;color:#56d364}
+.nlink{color:var(--text);text-decoration:none;font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
 .nlink:hover{color:var(--accent)}
-.nurl{color:var(--muted);font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nurl{color:var(--muted);font-size:.7rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.view-btn{flex-shrink:0;padding:.1rem .5rem;font-size:.63rem;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:var(--font);transition:all .12s}
+.view-btn:hover{background:var(--accent);border-color:var(--accent);color:#000}
 .nchildren{overflow:hidden}
 .has-ch:not(.open)>.nchildren{display:none}
+.legend{display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%}.dot.nav{background:#79c0ff}.dot.pg{background:#56d364}
 
-/* ── REDIRECT TABLE ── */
+/* MODAL */
+#content-modal{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto}
+#content-modal.open{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:100%;max-width:920px;min-height:200px;display:flex;flex-direction:column;margin:auto}
+.modal-head{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:1rem}
+.modal-head-text{flex:1;overflow:hidden}
+.modal-title{font-size:1rem;font-weight:700;margin-bottom:.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.modal-url{font-family:var(--mono);font-size:.72rem;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.modal-close{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:.2rem .4rem;flex-shrink:0}
+.modal-close:hover{color:var(--text)}
+.modal-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface2);border-radius:0}
+.modal-tab{padding:.5rem .9rem;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;user-select:none}
+.modal-tab:hover{color:var(--text)}.modal-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.modal-body{padding:1.25rem;max-height:70vh;overflow-y:auto}
+.modal-pane{display:none}.modal-pane.active{display:block}
+.content-preview{font-family:var(--font);line-height:1.75;color:var(--text);font-size:.9rem}
+.content-preview h1,.content-preview h2,.content-preview h3,.content-preview h4{font-weight:700;margin:1.2rem 0 .5rem;color:var(--accent)}
+.content-preview h1{font-size:1.3rem}.content-preview h2{font-size:1.1rem}.content-preview h3{font-size:1rem}
+.content-preview p{margin-bottom:.75rem}
+.content-preview ul,.content-preview ol{margin:.5rem 0 .75rem 1.5rem}
+.content-preview li{margin-bottom:.3rem}
+.content-preview a{color:var(--accent)}
+.content-preview img{max-width:100%;border-radius:6px;margin:.5rem 0;border:1px solid var(--border)}
+.content-preview table{width:100%;border-collapse:collapse;font-size:.85rem;margin:.75rem 0}
+.content-preview th,.content-preview td{border:1px solid var(--border);padding:.4rem .6rem;text-align:left}
+.content-preview th{background:var(--surface2)}
+.content-preview blockquote{border-left:3px solid var(--accent);padding:.5rem 1rem;color:var(--muted);margin:.75rem 0}
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.75rem;margin-top:.5rem}
+.img-item{background:var(--surface2);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.img-item img{width:100%;height:110px;object-fit:cover;display:block}
+.img-item-url{font-family:var(--mono);font-size:.62rem;color:var(--muted);padding:.3rem .4rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meta-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.78rem}
+.meta-table td{padding:.45rem .6rem;border-bottom:1px solid var(--border);vertical-align:top}
+.meta-table td:first-child{color:var(--muted);width:140px}
+.meta-table td:last-child{color:var(--text);word-break:break-all}
+.copy-btn{padding:.3rem .75rem;font-size:.72rem;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;font-family:var(--font);margin-bottom:1rem}
+.copy-btn:hover{background:var(--accent2);border-color:var(--accent2);color:#000}
+pre.html-out{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:1rem;overflow:auto;font-family:var(--mono);font-size:.7rem;color:var(--accent2);max-height:400px;white-space:pre-wrap;word-break:break-all}
+
+/* REDIR TABLE */
 .tbl-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:1rem;flex-wrap:wrap}
 .tbl-head h2{font-size:.95rem;font-weight:700}
 .export-row{display:flex;gap:.5rem;flex-wrap:wrap}
-
-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.75rem}
-thead th{background:var(--surface2);border:1px solid var(--border);padding:.5rem .75rem;text-align:left;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:var(--font);font-size:.68rem;position:sticky;top:0}
-tbody tr{border-bottom:1px solid var(--border)}
-tbody tr:hover{background:var(--surface2)}
-tbody td{padding:.4rem .75rem;vertical-align:middle}
+table.redir{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.75rem}
+table.redir thead th{background:var(--surface2);border:1px solid var(--border);padding:.5rem .75rem;text-align:left;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:var(--font);font-size:.68rem;position:sticky;top:0}
+table.redir tbody tr{border-bottom:1px solid var(--border)}
+table.redir tbody tr:hover{background:var(--surface2)}
+table.redir tbody td{padding:.4rem .75rem;vertical-align:middle}
 .old-u code{color:var(--accent3)}
-td input[type=text]{
-  background:var(--surface2);border:1px solid var(--border);border-radius:4px;
-  color:var(--text);font-family:var(--mono);font-size:.72rem;padding:.25rem .5rem;
-  width:100%;outline:none;
-}
+td input[type=text]{background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:.72rem;padding:.25rem .5rem;width:100%;outline:none}
 td input:focus{border-color:var(--accent2)}
-td select{
-  background:var(--surface2);border:1px solid var(--border);border-radius:4px;
-  color:var(--accent);font-family:var(--mono);font-size:.72rem;padding:.25rem .5rem;outline:none;
-}
-
+td select{background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--accent);font-family:var(--mono);font-size:.72rem;padding:.25rem .5rem;outline:none}
 .note{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:.75rem 1rem;font-size:.8rem;color:var(--muted);margin-bottom:1rem}
 .note strong{color:var(--text)}
-
-/* STATS */
-.stats{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem}
-.stat{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.6rem 1rem;min-width:110px;text-align:center}
-.stat-v{font-size:1.5rem;font-weight:800;color:var(--accent);font-family:var(--mono)}
-.stat-l{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-
-/* ── MISC ── */
-.legend{display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
-.li{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--muted)}
-.dot{width:8px;height:8px;border-radius:50%}
-.dot.nav{background:#79c0ff}
-.dot.pg{background:#56d364}
-
-.empty{text-align:center;padding:3rem;color:var(--muted);font-family:var(--mono);font-size:.85rem}
-
 footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-family:var(--mono);border-top:1px solid var(--border);margin-top:auto}
 </style>
 </head>
@@ -183,50 +148,38 @@ footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-f
   <div class="tag">Drupal Migration Tool</div>
 </header>
 
-<!-- SETUP UI -->
 <div class="setup" id="setup">
-
   <div class="card">
     <h2><span class="step-badge">1</span> Cloudflare Worker URL</h2>
-    <p style="font-size:.82rem;color:var(--muted);margin-bottom:1rem">
-      This app needs a Cloudflare Worker to fetch pages for you (avoids browser cross-origin blocks).
-      Deploy <code style="color:var(--accent)">worker.js</code> to your free Cloudflare account, then paste the URL below.
-    </p>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:1rem">Deploy <code style="color:var(--accent)">worker.js</code> to your free Cloudflare Workers account, then paste the URL here.</p>
     <div class="field">
       <label>Worker URL</label>
       <input type="url" id="worker-url" placeholder="https://my-scraper.yourname.workers.dev" />
-      <p class="input-note">Don't have one yet? <a href="https://workers.cloudflare.com" target="_blank">Sign up free at workers.cloudflare.com</a> → Workers &amp; Pages → Create → paste worker.js → Deploy.</p>
+      <p class="input-note">No account? <a href="https://workers.cloudflare.com" target="_blank">Sign up free at workers.cloudflare.com</a></p>
     </div>
-    <div class="worker-test">
-      <div class="field">
-        <div id="worker-status" style="display:none"></div>
-      </div>
+    <div style="display:flex;gap:.75rem;align-items:center;margin-top:.75rem">
       <button class="btn sm" onclick="testWorker()">Test Connection</button>
+      <div id="worker-status"></div>
     </div>
   </div>
-
   <div class="card">
     <h2><span class="step-badge">2</span> Target Site</h2>
     <div class="row">
       <div class="field">
         <label>Site URL to crawl</label>
-        <input type="url" id="site-url" value="https://www.pregnancyparenting.org.au" placeholder="https://example.com" />
+        <input type="url" id="site-url" value="https://www.pregnancyparenting.org.au" />
       </div>
-      <div class="field" style="max-width:140px">
+      <div class="field" style="max-width:130px">
         <label>Max pages</label>
         <input type="text" id="max-pages" value="300" />
       </div>
     </div>
-    <p class="input-note" style="margin-top:.75rem">⚡ Crawl speed: ~1 page/sec. 300 pages ≈ 5 min. Increase limit for larger sites.</p>
   </div>
-
   <div style="display:flex;justify-content:flex-end">
-    <button class="btn primary" id="start-btn" onclick="startCrawl()">Start Crawling →</button>
+    <button class="btn primary" onclick="startCrawl()">Start Crawling →</button>
   </div>
-
 </div>
 
-<!-- CRAWLER APP -->
 <div id="app">
   <div class="app-top">
     <div class="target">Crawling: <strong id="crawl-target"></strong></div>
@@ -235,17 +188,13 @@ footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-f
       <div class="progress-label" id="prog-label">Starting…</div>
     </div>
     <button class="btn sm danger" id="stop-btn" onclick="stopCrawl()">Stop</button>
-    <button class="btn sm" id="restart-btn" onclick="restart()" style="display:none">↩ New Crawl</button>
+    <button class="btn sm" id="restart-btn" onclick="location.reload()" style="display:none">↩ New Crawl</button>
   </div>
-
   <div class="app-body">
-    <!-- LOG -->
     <div class="log-panel">
       <h3>Crawl Log</h3>
       <div class="log-scroll" id="log"></div>
     </div>
-
-    <!-- RESULTS -->
     <div class="results-panel">
       <div class="tabs">
         <div class="tab active" onclick="showTab('tree',this)">🌳 Page Tree</div>
@@ -253,7 +202,6 @@ footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-f
         <div class="tab" onclick="showTab('json',this)">📋 JSON</div>
       </div>
       <div class="panel-content">
-
         <div class="pane active" id="pane-tree">
           <div class="stats" id="stats-bar"></div>
           <div class="legend">
@@ -265,11 +213,10 @@ footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-f
             <button class="btn sm" onclick="collapseAll()">Collapse all</button>
             <input id="q" type="text" placeholder="Filter…" oninput="filterTree(this.value)" />
           </div>
-          <div class="tree" id="tree-root"><div class="empty">Crawl in progress…</div></div>
+          <div class="tree" id="tree-root"><div style="text-align:center;padding:2rem;color:var(--muted);font-family:var(--mono)">Crawl in progress…</div></div>
         </div>
-
         <div class="pane" id="pane-redir">
-          <div class="note"><strong>How to use:</strong> Fill in the "New Path" column with the paths your rebuilt HTML site will use. Then export — choose Apache, Nginx, or CSV.</div>
+          <div class="note"><strong>How to use:</strong> Fill in the "New Path" column with your rebuilt HTML site paths, then export.</div>
           <div class="tbl-head">
             <h2 id="redir-count">Redirect Map</h2>
             <div class="export-row">
@@ -278,414 +225,385 @@ footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-f
               <button class="btn sm" onclick="exportNginx()">⬇ Nginx config</button>
             </div>
           </div>
-          <table id="redir-table">
-            <thead><tr><th>Old URL (Drupal)</th><th>Old Path</th><th>New Path (HTML site)</th><th>Type</th></tr></thead>
+          <table class="redir" id="redir-table">
+            <thead><tr><th>Old URL</th><th>Old Path</th><th>New Path</th><th>Type</th></tr></thead>
             <tbody id="redir-body"></tbody>
           </table>
         </div>
-
         <div class="pane" id="pane-json">
           <div style="display:flex;justify-content:flex-end;margin-bottom:.75rem">
             <button class="btn sm" onclick="downloadJSON()">⬇ Download JSON</button>
           </div>
           <pre id="json-out" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:1rem;overflow:auto;font-family:var(--mono);font-size:.72rem;color:var(--accent2);max-height:calc(100vh - 260px)"></pre>
         </div>
-
       </div>
     </div>
   </div>
 </div>
 
-<footer>Site Migration Crawler · Cloudflare Worker + GitHub Pages · Free to use</footer>
+<!-- CONTENT MODAL -->
+<div id="content-modal" onclick="closeModalBg(event)">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-head-text">
+        <div class="modal-title" id="modal-title"></div>
+        <a class="modal-url" id="modal-url" target="_blank"></a>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <div class="modal-tab active" onclick="showModalTab('preview',this)">👁 Preview</div>
+      <div class="modal-tab" onclick="showModalTab('text',this)">📝 Clean Text</div>
+      <div class="modal-tab" onclick="showModalTab('images',this)">🖼 Images</div>
+      <div class="modal-tab" onclick="showModalTab('meta',this)">ℹ Meta</div>
+      <div class="modal-tab" onclick="showModalTab('html',this)">💾 Raw HTML</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-pane active" id="mpane-preview">
+        <div class="content-preview" id="modal-preview"></div>
+      </div>
+      <div class="modal-pane" id="mpane-text">
+        <button class="copy-btn" onclick="copyText()">Copy text</button>
+        <pre id="modal-text" style="font-family:var(--font);font-size:.88rem;color:var(--text);white-space:pre-wrap;line-height:1.75"></pre>
+      </div>
+      <div class="modal-pane" id="mpane-images">
+        <p id="img-count" style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem"></p>
+        <div class="img-grid" id="modal-images"></div>
+      </div>
+      <div class="modal-pane" id="mpane-meta">
+        <table class="meta-table" id="modal-meta"></table>
+      </div>
+      <div class="modal-pane" id="mpane-html">
+        <button class="copy-btn" onclick="copyHTML()">Copy HTML</button>
+        <pre class="html-out" id="modal-html"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>Site Migration Crawler · Cloudflare Worker + GitHub Pages · Free</footer>
 
 <script>
-// ── STATE ──────────────────────────────────────────────────────────────────
-let workerUrl = '';
-let baseUrl   = '';
-let maxPages  = 300;
-let running   = false;
-let stopped   = false;
+let workerUrl='',baseUrl='',maxPages=300,stopped=false;
+const pages={},navUrls=new Set(),visited=new Set(),queue=[];
 
-const pages    = {};   // url → {title, desc, links, isNav, depth, parent}
-const navUrls  = new Set();
-const visited  = new Set();
-const queue    = [];   // {url, parent, depth}
+const SKIP_EXT=/\.(pdf|jpg|jpeg|png|gif|svg|webp|mp4|mp3|zip|doc|docx|xls|xlsx|ppt|pptx|css|js|ico|woff|woff2|xml|json)(\?.*)?$/i;
+const SKIP_PAT=['#','mailto:','tel:','javascript:','/user/','/admin/','/node/add','?q=user','logout','feed','?sort=','?page='];
 
-const SKIP_EXT = /\.(pdf|jpg|jpeg|png|gif|svg|webp|mp4|mp3|zip|doc|docx|xls|xlsx|ppt|pptx|css|js|ico|woff|woff2|xml|json)(\?.*)?$/i;
-const SKIP_PAT = ['#','mailto:','tel:','javascript:','/user/','/admin/','/node/add','?q=user','logout','feed','?sort=','?page='];
+// Drupal content area selectors — tried in order, first match with text > 50 chars wins
+const CONTENT_SELS=['main[role="main"]','main','#content','#main-content','.field--name-body','.field-items','article.node','[role="main"]','.main-container','.region-content','.layout-container'];
+// Elements to strip from extracted content
+const STRIP_SELS=['nav','header','footer','.nav','.navigation','.menu','.sidebar','.breadcrumb','.pager','script','style','noscript','#toolbar-bar','[role="navigation"]','.contextual','.tabs--primary','.social-sharing','.addtoany','.submitted','#comments'];
 
-// ── HELPERS ────────────────────────────────────────────────────────────────
-function norm(url) {
-  try {
-    const u = new URL(url);
-    u.hash = '';
-    u.search = u.search; // keep query params for now
-    let p = u.pathname.replace(/\/+$/, '') || '/';
-    return u.origin + p;
-  } catch { return url; }
+function norm(url){try{const u=new URL(url);u.hash='';let p=u.pathname.replace(/\/+$/,'')||'/';return u.origin+p;}catch{return url;}}
+function sameDomain(url){try{return new URL(url).hostname===new URL(baseUrl).hostname;}catch{return false;}}
+function shouldSkip(url){if(SKIP_EXT.test(url))return true;return SKIP_PAT.some(p=>url.includes(p));}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+async function testWorker(){
+  const wu=document.getElementById('worker-url').value.trim();
+  if(!wu){alert('Enter Worker URL first.');return;}
+  const el=document.getElementById('worker-status');
+  el.style.display='';el.className='status-testing';el.textContent='Testing…';
+  try{
+    const r=await fetch(`${wu}?url=https://httpbin.org/get`,{signal:AbortSignal.timeout(8000)});
+    el.className=r.ok?'status-ok':'status-err';
+    el.textContent=r.ok?'✓ Worker connected and working!':'✗ Worker returned '+r.status;
+  }catch(e){el.className='status-err';el.textContent='✗ '+e.message;}
 }
 
-function sameDomain(url) {
-  try { return new URL(url).hostname === new URL(baseUrl).hostname; } catch { return false; }
+async function fetchPage(url){
+  const r=await fetch(`${workerUrl}?url=${encodeURIComponent(url)}`,{signal:AbortSignal.timeout(15000)});
+  const finalUrl=norm(r.headers.get('X-Final-Url')||url);
+  const ct=r.headers.get('Content-Type')||'';
+  if(!ct.includes('text/html'))return{html:null,finalUrl};
+  return{html:await r.text(),finalUrl};
 }
 
-function shouldSkip(url) {
-  if (SKIP_EXT.test(url)) return true;
-  return SKIP_PAT.some(p => url.includes(p));
-}
+function parsePage(html,pageUrl){
+  const doc=(new DOMParser()).parseFromString(html,'text/html');
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+  // Nav links
+  const navSels=['nav','header nav','.nav','.navigation','.menu','#navigation','#main-menu','#main-navigation','.main-menu','.primary-menu','[role="navigation"]','.navbar','.block-menu','.block-system-main-menu'];
+  const navLinks=new Set();
+  navSels.forEach(sel=>doc.querySelectorAll(sel+' a[href]').forEach(a=>{
+    try{const abs=norm(new URL(a.getAttribute('href'),pageUrl).href);if(sameDomain(abs)&&!shouldSkip(abs))navLinks.add(abs);}catch{}
+  }));
 
-// ── WORKER TEST ────────────────────────────────────────────────────────────
-async function testWorker() {
-  const wu = document.getElementById('worker-url').value.trim();
-  if (!wu) { alert('Enter your Worker URL first.'); return; }
-  const el = document.getElementById('worker-status');
-  el.style.display = '';
-  el.className = 'status-testing';
-  el.textContent = 'Testing…';
-  try {
-    const r = await fetch(`${wu}?url=https://httpbin.org/get`, {signal: AbortSignal.timeout(8000)});
-    if (r.ok) {
-      el.className = 'status-ok';
-      el.textContent = '✓ Worker is reachable and working!';
-    } else {
-      el.className = 'status-err';
-      el.textContent = `✗ Worker returned ${r.status}`;
-    }
-  } catch(e) {
-    el.className = 'status-err';
-    el.textContent = `✗ Could not reach worker: ${e.message}`;
-  }
-}
-
-// ── FETCH VIA WORKER ───────────────────────────────────────────────────────
-async function fetchPage(url) {
-  const proxyUrl = `${workerUrl}?url=${encodeURIComponent(url)}`;
-  const r = await fetch(proxyUrl, {signal: AbortSignal.timeout(15000)});
-  const finalUrl = r.headers.get('X-Final-Url') || url;
-  const ct = r.headers.get('Content-Type') || '';
-  if (!ct.includes('text/html')) return {html: null, finalUrl};
-  const html = await r.text();
-  return {html, finalUrl: norm(finalUrl)};
-}
-
-// ── DOM PARSING ────────────────────────────────────────────────────────────
-function parseLinks(html, pageUrl) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
-
-  const navSels = ['nav','header nav','.nav','.navigation','.menu','#navigation',
-    '#main-menu','#main-navigation','.main-menu','.primary-menu','[role="navigation"]',
-    '.navbar','.block-menu','.block-system-main-menu'];
-
-  const navLinks = new Set();
-  navSels.forEach(sel => {
-    doc.querySelectorAll(sel + ' a[href]').forEach(a => {
-      try {
-        const abs = norm(new URL(a.getAttribute('href'), pageUrl).href);
-        if (sameDomain(abs) && !shouldSkip(abs)) navLinks.add(abs);
-      } catch {}
-    });
-  });
-
-  const allLinks = new Set();
-  doc.querySelectorAll('a[href]').forEach(a => {
-    try {
-      const abs = norm(new URL(a.getAttribute('href'), pageUrl).href);
-      if (sameDomain(abs) && !shouldSkip(abs)) allLinks.add(abs);
-    } catch {}
+  // All links
+  const allLinks=new Set();
+  doc.querySelectorAll('a[href]').forEach(a=>{
+    try{const abs=norm(new URL(a.getAttribute('href'),pageUrl).href);if(sameDomain(abs)&&!shouldSkip(abs))allLinks.add(abs);}catch{}
   });
 
   // Title
-  let title = '';
-  for (const sel of ['h1','.page-title','#page-title','.page-header h1','title']) {
-    const el = doc.querySelector(sel);
-    if (el && el.textContent.trim()) { title = el.textContent.trim(); break; }
+  let title='';
+  for(const sel of['h1','.page-title','#page-title','.page-header h1','title']){
+    const el=doc.querySelector(sel);if(el&&el.textContent.trim()){title=el.textContent.trim();break;}
   }
-  if (!title) title = new URL(pageUrl).pathname || pageUrl;
+  if(!title)title=new URL(pageUrl).pathname||pageUrl;
 
-  // Meta desc
-  const metaDesc = doc.querySelector('meta[name="description"]');
-  const desc = metaDesc ? (metaDesc.getAttribute('content') || '') : '';
+  // Meta
+  const desc=(doc.querySelector('meta[name="description"]')?.getAttribute('content')||'');
+  const keywords=(doc.querySelector('meta[name="keywords"]')?.getAttribute('content')||'');
 
-  return {navLinks: [...navLinks], allLinks: [...allLinks], title: title.slice(0,120), desc};
+  // Main content extraction
+  let contentEl=null;
+  for(const sel of CONTENT_SELS){
+    const el=doc.querySelector(sel);
+    if(el&&el.textContent.trim().length>50){contentEl=el.cloneNode(true);break;}
+  }
+  if(!contentEl)contentEl=doc.body?doc.body.cloneNode(true):doc.createElement('div');
+
+  // Strip noise from content clone
+  STRIP_SELS.forEach(sel=>contentEl.querySelectorAll(sel).forEach(el=>el.remove()));
+
+  // Fix image src to absolute
+  contentEl.querySelectorAll('img[src]').forEach(img=>{
+    try{img.src=new URL(img.getAttribute('src'),pageUrl).href;}catch{}
+  });
+
+  // Fix links to absolute
+  contentEl.querySelectorAll('a[href]').forEach(a=>{
+    try{a.href=new URL(a.getAttribute('href'),pageUrl).href;}catch{}
+  });
+
+  const contentHTML=contentEl.innerHTML;
+  const cleanText=(contentEl.innerText||contentEl.textContent||'').replace(/\n{3,}/g,'\n\n').trim();
+
+  // All images from full doc
+  const images=[];
+  const seenSrc=new Set();
+  doc.querySelectorAll('img[src]').forEach(img=>{
+    try{
+      const src=new URL(img.getAttribute('src'),pageUrl).href;
+      const alt=img.getAttribute('alt')||'';
+      if(!src.startsWith('data:')&&!seenSrc.has(src)){seenSrc.add(src);images.push({src,alt});}
+    }catch{}
+  });
+
+  // Headings
+  const headings=[];
+  doc.querySelectorAll('h1,h2,h3').forEach(h=>headings.push({level:h.tagName,text:h.textContent.trim()}));
+
+  return{navLinks:[...navLinks],allLinks:[...allLinks],title:title.slice(0,120),desc,keywords,contentHTML,cleanText,images,headings};
 }
 
-// ── CRAWL ──────────────────────────────────────────────────────────────────
-async function startCrawl() {
-  workerUrl = document.getElementById('worker-url').value.trim().replace(/\/$/, '');
-  const siteInput = document.getElementById('site-url').value.trim();
-  maxPages = parseInt(document.getElementById('max-pages').value) || 300;
-
-  if (!workerUrl) { alert('Enter your Cloudflare Worker URL.'); return; }
-  if (!siteInput) { alert('Enter the site URL to crawl.'); return; }
-
-  try { baseUrl = norm(siteInput); } catch { alert('Invalid site URL.'); return; }
-
-  document.getElementById('setup').style.display = 'none';
-  const app = document.getElementById('app');
-  app.style.display = 'flex';
-  document.getElementById('crawl-target').textContent = baseUrl;
-
-  queue.push({url: baseUrl, parent: null, depth: 0});
-  running = true; stopped = false;
+async function startCrawl(){
+  workerUrl=document.getElementById('worker-url').value.trim().replace(/\/$/,'');
+  const siteInput=document.getElementById('site-url').value.trim();
+  maxPages=parseInt(document.getElementById('max-pages').value)||300;
+  if(!workerUrl){alert('Enter your Cloudflare Worker URL.');return;}
+  if(!siteInput){alert('Enter the site URL to crawl.');return;}
+  try{baseUrl=norm(siteInput);}catch{alert('Invalid site URL.');return;}
+  document.getElementById('setup').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('crawl-target').textContent=baseUrl;
+  queue.push({url:baseUrl,parent:null,depth:0});
   crawlLoop();
 }
 
-async function crawlLoop() {
-  let count = 0;
-  const DELAY = 800; // ms between requests
-
-  while (queue.length > 0 && count < maxPages && !stopped) {
-    const {url, parent, depth} = queue.shift();
-    if (visited.has(url)) continue;
-    visited.add(url);
-    count++;
-
-    updateProgress(count, queue.length);
-    addLog(count, url, 'testing');
+async function crawlLoop(){
+  let count=0;
+  while(queue.length>0&&count<maxPages&&!stopped){
+    const{url,parent,depth}=queue.shift();
+    if(visited.has(url))continue;
+    visited.add(url);count++;
+    updateProgress(count,queue.length);
+    addLog(count,url,'testing');
 
     let result;
-    try {
-      result = await fetchPage(url);
-    } catch(e) {
-      addLog(count, `✗ ${url.split('/').pop() || url} (${e.message})`, 'err');
-      await sleep(DELAY);
-      continue;
-    }
+    try{result=await fetchPage(url);}
+    catch(e){addLog(count,'✗ '+e.message,'err');await sleep(800);continue;}
 
-    const {html, finalUrl} = result;
-    if (!html) {
-      addLog(count, `skip ${url}`, 'skip');
-      await sleep(DELAY);
-      continue;
-    }
+    const{html,finalUrl}=result;
+    if(!html){addLog(count,'skip','skip');await sleep(600);continue;}
 
-    const {navLinks, allLinks, title, desc} = parseLinks(html, finalUrl);
+    const p=parsePage(html,finalUrl);
+    p.navLinks.forEach(u=>navUrls.add(u));
+    const isNav=navUrls.has(url)||navUrls.has(finalUrl);
 
-    // Mark nav URLs
-    navLinks.forEach(u => navUrls.add(u));
-    const isNav = navUrls.has(url) || navUrls.has(finalUrl);
+    pages[url]={title:p.title,desc:p.desc,keywords:p.keywords,depth,parent,isNav,finalUrl,contentHTML:p.contentHTML,cleanText:p.cleanText,images:p.images,headings:p.headings,linkCount:p.allLinks.length};
 
-    pages[url] = {title, desc, depth, parent, isNav, finalUrl, allLinks: allLinks.length};
+    addLog(count,p.title||url,isNav?'nav':'ok');
 
-    addLog(count, title || url, isNav ? 'nav' : 'ok');
+    const newNav=p.navLinks.filter(u=>!visited.has(u)&&!queue.find(q=>q.url===u));
+    const newAll=p.allLinks.filter(u=>!visited.has(u)&&!p.navLinks.includes(u)&&!queue.find(q=>q.url===u));
+    queue.unshift(...newNav.map(u=>({url:u,parent:url,depth:depth+1})));
+    queue.push(...newAll.map(u=>({url:u,parent:url,depth:depth+2})));
 
-    // Queue nav links first (front), content links last (back)
-    const newNav = navLinks.filter(u => !visited.has(u) && !queue.find(q=>q.url===u));
-    const newAll = allLinks.filter(u => !visited.has(u) && !navLinks.includes(u) && !queue.find(q=>q.url===u));
-
-    queue.unshift(...newNav.map(u => ({url:u, parent:url, depth:depth+1})));
-    queue.push(...newAll.map(u => ({url:u, parent:url, depth:depth+2})));
-
-    renderTree();
-    updateRedirectTable();
-
-    await sleep(DELAY);
+    renderTree();updateRedirectTable();
+    await sleep(850);
   }
-
-  running = false;
   finishCrawl(count);
 }
 
-function stopCrawl() { stopped = true; }
-
-function finishCrawl(count) {
-  document.getElementById('prog-label').textContent = `✓ Done — ${count} pages crawled`;
-  document.getElementById('stop-btn').style.display = 'none';
-  document.getElementById('restart-btn').style.display = '';
-  renderTree();
-  updateRedirectTable();
-  updateJSON();
+function stopCrawl(){stopped=true;}
+function finishCrawl(count){
+  document.getElementById('prog-label').textContent=`✓ Done — ${count} pages crawled`;
+  document.getElementById('stop-btn').style.display='none';
+  document.getElementById('restart-btn').style.display='';
+  renderTree();updateRedirectTable();updateJSON();
+}
+function updateProgress(done,queued){
+  const total=Math.min(done+queued,maxPages);
+  const pct=Math.round((done/total)*100);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-label').textContent=`${done} crawled · ${queued} queued`;
+}
+function addLog(n,text,type){
+  const el=document.getElementById('log');
+  const d=document.createElement('div');d.className='log-entry '+type;
+  d.innerHTML=`<span class="log-num">${n}</span><span class="log-text" title="${text}">${text}</span>`;
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
 }
 
-function restart() {
-  location.reload();
+function showTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');document.getElementById('pane-'+name).classList.add('active');
+  if(name==='json')updateJSON();
 }
 
-// ── PROGRESS ───────────────────────────────────────────────────────────────
-function updateProgress(done, queued) {
-  const total = Math.min(done + queued, maxPages);
-  const pct = Math.round((done / total) * 100);
-  document.getElementById('prog-fill').style.width = pct + '%';
-  document.getElementById('prog-label').textContent = `${done} crawled · ${queued} queued`;
-}
-
-// ── LOG ────────────────────────────────────────────────────────────────────
-function addLog(n, text, type) {
-  const el = document.getElementById('log');
-  const d = document.createElement('div');
-  d.className = `log-entry ${type}`;
-  d.innerHTML = `<span class="log-num">${n}</span><span class="log-text" title="${text}">${text}</span>`;
-  el.appendChild(d);
-  el.scrollTop = el.scrollHeight;
-}
-
-// ── TABS ───────────────────────────────────────────────────────────────────
-function showTab(name, el) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('pane-'+name).classList.add('active');
-  if (name === 'json') updateJSON();
-}
-
-// ── TREE RENDER ────────────────────────────────────────────────────────────
-function buildTree() {
-  const root = {url: baseUrl, children: {}};
-  const nodes = {};
-  nodes[baseUrl] = root;
-
-  Object.keys(pages).forEach(url => {
-    if (!nodes[url]) nodes[url] = {url, children: {}};
-    const p = new URL(url);
-    const parts = p.pathname.split('/').filter(Boolean);
-    if (parts.length === 0) return; // root itself
-    const parentPath = '/' + parts.slice(0,-1).join('/');
-    const parentUrl = p.origin + (parentPath || '/');
-    const pNorm = norm(parentUrl);
-    const parent = nodes[pNorm] || root;
-    parent.children[url] = nodes[url];
+function buildTree(){
+  const nodes={};
+  const root={url:baseUrl,children:{}};nodes[baseUrl]=root;
+  Object.keys(pages).forEach(url=>{
+    if(!nodes[url])nodes[url]={url,children:{}};
+    if(url===baseUrl)return;
+    const p=new URL(url);
+    const parts=p.pathname.split('/').filter(Boolean);
+    const parentPath='/'+parts.slice(0,-1).join('/');
+    const parentUrl=norm(p.origin+(parentPath||'/'));
+    const parent=nodes[parentUrl]||root;
+    if(!parent.children[url])parent.children[url]=nodes[url];
   });
-
   return root;
 }
 
-function renderNode(node, depth) {
-  const url = node.url;
-  const info = pages[url] || {};
-  const isNav = navUrls.has(url) || info.isNav;
-  const kids = Object.values(node.children || {});
-  const hasKids = kids.length > 0;
-  const indent = depth * 20;
-  const badge = isNav
-    ? '<span class="nbadge nav">NAV</span>'
-    : '<span class="nbadge page">PAGE</span>';
-  const tog = hasKids
-    ? '<span class="tog">▶</span>'
-    : '<span class="tog leaf">·</span>';
-  const title = info.title || url;
-  const childHtml = kids.map(c => renderNode(c, depth+1)).join('');
-  const childDiv = hasKids ? `<div class="nchildren">${childHtml}</div>` : '';
-  const onclick = hasKids ? 'onclick="toggleNode(this)"' : '';
-  return `
-  <div class="tnode ${hasKids?'has-ch':''}" style="--in:${indent}px">
-    <div class="nrow" ${onclick}>${tog}${badge}
+function renderNode(node,depth){
+  const url=node.url,info=pages[url]||{};
+  const isNav=navUrls.has(url)||info.isNav;
+  const kids=Object.values(node.children||{});
+  const hasKids=kids.length>0;
+  const badge=isNav?'<span class="nbadge nav">NAV</span>':'<span class="nbadge page">PAGE</span>';
+  const tog=hasKids?'<span class="tog">▶</span>':'<span class="tog leaf">·</span>';
+  const title=info.title||url;
+  const slug=url.replace(baseUrl,'')||'/';
+  const childHtml=kids.map(c=>renderNode(c,depth+1)).join('');
+  const childDiv=hasKids?`<div class="nchildren">${childHtml}</div>`:'';
+  const oc=hasKids?'onclick="toggleNode(this)"':'';
+  const safeUrl=url.replace(/'/g,"\\'");
+  return `<div class="tnode ${hasKids?'has-ch':''}" style="--in:${depth*20}px">
+    <div class="nrow" ${oc}>${tog}${badge}
       <a href="${url}" target="_blank" class="nlink" title="${title}">${title}</a>
-      <span class="nurl">${url.replace(baseUrl,'')}</span>
-    </div>${childDiv}
-  </div>`;
+      <span class="nurl">${slug}</span>
+      <button class="view-btn" onclick="openContent('${safeUrl}');event.stopPropagation()">View content</button>
+    </div>${childDiv}</div>`;
 }
 
-function renderTree() {
-  const treeData = buildTree();
-  const html = renderNode(treeData, 0);
-  document.getElementById('tree-root').innerHTML = html;
-
-  // Stats
-  const total = Object.keys(pages).length;
-  const navCount = [...navUrls].filter(u => u in pages).length;
-  document.getElementById('stats-bar').innerHTML = `
+function renderTree(){
+  document.getElementById('tree-root').innerHTML=renderNode(buildTree(),0);
+  const total=Object.keys(pages).length;
+  const navCount=[...navUrls].filter(u=>u in pages).length;
+  document.getElementById('stats-bar').innerHTML=`
     <div class="stat"><div class="stat-v">${total}</div><div class="stat-l">Pages</div></div>
     <div class="stat"><div class="stat-v">${navCount}</div><div class="stat-l">Nav</div></div>
-    <div class="stat"><div class="stat-v">${total - navCount}</div><div class="stat-l">Sub-pages</div></div>
+    <div class="stat"><div class="stat-v">${total-navCount}</div><div class="stat-l">Sub-pages</div></div>
     <div class="stat"><div class="stat-v">${queue.length}</div><div class="stat-l">Queued</div></div>`;
-
-  // Auto-open top nodes
-  document.querySelectorAll('#tree-root > .tnode').forEach(n => n.classList.add('open'));
+  document.querySelectorAll('#tree-root>.tnode').forEach(n=>n.classList.add('open'));
 }
 
-function toggleNode(row) { row.closest('.tnode').classList.toggle('open'); }
-function expandAll() { document.querySelectorAll('.tnode.has-ch').forEach(n => n.classList.add('open')); }
-function collapseAll() { document.querySelectorAll('.tnode.has-ch').forEach(n => n.classList.remove('open')); }
-
-function filterTree(q) {
-  const nodes = document.querySelectorAll('.tnode');
-  if (!q) { nodes.forEach(n => n.style.display = ''); return; }
-  q = q.toLowerCase();
-  nodes.forEach(n => {
-    const link = n.querySelector('.nlink')?.textContent?.toLowerCase() || '';
-    const url  = n.querySelector('.nurl')?.textContent?.toLowerCase() || '';
-    n.style.display = (link.includes(q) || url.includes(q)) ? '' : 'none';
+function toggleNode(row){row.closest('.tnode').classList.toggle('open');}
+function expandAll(){document.querySelectorAll('.tnode.has-ch').forEach(n=>n.classList.add('open'));}
+function collapseAll(){document.querySelectorAll('.tnode.has-ch').forEach(n=>n.classList.remove('open'));}
+function filterTree(q){
+  const nodes=document.querySelectorAll('.tnode');
+  if(!q){nodes.forEach(n=>n.style.display='');return;}
+  q=q.toLowerCase();
+  nodes.forEach(n=>{
+    const link=n.querySelector('.nlink')?.textContent?.toLowerCase()||'';
+    const url=n.querySelector('.nurl')?.textContent?.toLowerCase()||'';
+    n.style.display=(link.includes(q)||url.includes(q))?'':'none';
   });
-  nodes.forEach(n => {
-    if (n.style.display === '') {
-      let p = n.parentElement?.closest('.tnode');
-      while(p) { p.style.display=''; p=p.parentElement?.closest('.tnode'); }
-    }
-  });
+  nodes.forEach(n=>{if(n.style.display===''){let p=n.parentElement?.closest('.tnode');while(p){p.style.display='';p=p.parentElement?.closest('.tnode');}}});
 }
 
-// ── REDIRECT TABLE ─────────────────────────────────────────────────────────
-function updateRedirectTable() {
-  const urls = Object.keys(pages).sort();
-  document.getElementById('redir-count').textContent = `Redirect Map (${urls.length} URLs)`;
-  const rows = urls.map(url => {
-    const slug = new URL(url).pathname || '/';
-    return `<tr>
-      <td class="old-u"><code title="${url}">${url}</code></td>
-      <td><code>${slug}</code></td>
-      <td><input type="text" value="${slug}" /></td>
-      <td><select><option>301</option><option>302</option><option>Gone</option><option>Keep</option></select></td>
-    </tr>`;
+// CONTENT MODAL
+function openContent(url){
+  const info=pages[url];
+  if(!info){alert('Content not yet available for this page.');return;}
+  document.getElementById('modal-title').textContent=info.title||url;
+  const urlEl=document.getElementById('modal-url');urlEl.textContent=url;urlEl.href=url;
+
+  // Preview
+  const prev=document.getElementById('modal-preview');
+  prev.innerHTML=info.contentHTML||'<p style="color:var(--muted)">No content could be extracted from this page.</p>';
+  prev.querySelectorAll('script,style').forEach(el=>el.remove());
+
+  // Text
+  document.getElementById('modal-text').textContent=info.cleanText||'(no text)';
+
+  // Images
+  const imgs=info.images||[];
+  document.getElementById('img-count').textContent=`${imgs.length} image${imgs.length!==1?'s':''} found`;
+  document.getElementById('modal-images').innerHTML=imgs.length
+    ?imgs.map(i=>`<div class="img-item"><img src="${i.src}" alt="${i.alt}" loading="lazy" onerror="this.parentElement.style.display='none'"><div class="img-item-url" title="${i.src}">${i.src.split('/').pop()}</div></div>`).join('')
+    :'<p style="color:var(--muted);font-size:.85rem">No images found on this page.</p>';
+
+  // Meta
+  document.getElementById('modal-meta').innerHTML=`
+    <tr><td>Title</td><td>${info.title||'—'}</td></tr>
+    <tr><td>URL</td><td><a href="${url}" target="_blank" style="color:var(--accent)">${url}</a></td></tr>
+    <tr><td>Meta description</td><td>${info.desc||'—'}</td></tr>
+    <tr><td>Meta keywords</td><td>${info.keywords||'—'}</td></tr>
+    <tr><td>Images</td><td>${(info.images||[]).length}</td></tr>
+    <tr><td>Internal links</td><td>${info.linkCount||0}</td></tr>
+    <tr><td>Is nav page</td><td>${info.isNav?'Yes':'No'}</td></tr>
+    <tr><td>Depth</td><td>${info.depth||0}</td></tr>
+    <tr><td>Headings</td><td>${(info.headings||[]).map(h=>`<strong>${h.level}:</strong> ${h.text}`).join('<br>')||'—'}</td></tr>`;
+
+  // HTML
+  document.getElementById('modal-html').textContent=(info.contentHTML||'').slice(0,25000);
+
+  showModalTab('preview',document.querySelector('.modal-tab'));
+  document.getElementById('content-modal').classList.add('open');
+}
+
+function showModalTab(name,el){
+  document.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.modal-pane').forEach(p=>p.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.getElementById('mpane-'+name).classList.add('active');
+}
+function closeModalBg(e){if(e.target===document.getElementById('content-modal'))closeModal();}
+function closeModal(){document.getElementById('content-modal').classList.remove('open');}
+function copyText(){navigator.clipboard.writeText(document.getElementById('modal-text').textContent).catch(()=>{});}
+function copyHTML(){navigator.clipboard.writeText(document.getElementById('modal-html').textContent).catch(()=>{});}
+
+// REDIRECT TABLE
+function updateRedirectTable(){
+  const urls=Object.keys(pages).sort();
+  document.getElementById('redir-count').textContent=`Redirect Map (${urls.length} URLs)`;
+  document.getElementById('redir-body').innerHTML=urls.map(url=>{
+    const slug=new URL(url).pathname||'/';
+    return `<tr><td class="old-u"><code title="${url}">${url}</code></td><td><code>${slug}</code></td><td><input type="text" value="${slug}"/></td><td><select><option>301</option><option>302</option><option>Gone</option><option>Keep</option></select></td></tr>`;
   }).join('');
-  document.getElementById('redir-body').innerHTML = rows;
 }
+function getTableData(){return[...document.querySelectorAll('#redir-table tbody tr')].map(r=>{const tds=r.querySelectorAll('td');return{old_url:tds[0].querySelector('code').textContent,old_path:tds[1].querySelector('code').textContent,new_path:tds[2].querySelector('input').value,type:tds[3].querySelector('select').value};});}
+function exportCSV(){let csv='Old URL,Old Path,New Path,Type\n';getTableData().forEach(r=>csv+=`"${r.old_url}","${r.old_path}","${r.new_path}","${r.type}"\n`);dl('redirects.csv',csv,'text/csv');}
+function exportApache(){let out='# 301 Redirects\nRewriteEngine On\n\n';getTableData().filter(r=>r.type==='301').forEach(r=>out+=`Redirect 301 ${r.old_path} ${r.new_path}\n`);dl('redirects.htaccess',out,'text/plain');}
+function exportNginx(){let out='# 301 Redirects\n\n';getTableData().filter(r=>r.type==='301').forEach(r=>out+=`rewrite ^${r.old_path}$ ${r.new_path} permanent;\n`);dl('redirects.nginx.conf',out,'text/plain');}
 
-function getTableData() {
-  return [...document.querySelectorAll('#redir-table tbody tr')].map(r => {
-    const tds = r.querySelectorAll('td');
-    return {
-      old_url: tds[0].querySelector('code').textContent,
-      old_path: tds[1].querySelector('code').textContent,
-      new_path: tds[2].querySelector('input').value,
-      type: tds[3].querySelector('select').value,
-    };
-  });
+function updateJSON(){
+  const data={base_url:baseUrl,crawled_at:new Date().toISOString(),total:Object.keys(pages).length,
+    pages:Object.fromEntries(Object.entries(pages).map(([url,info])=>[url,{title:info.title,desc:info.desc,keywords:info.keywords,is_nav:navUrls.has(url),depth:info.depth,image_count:(info.images||[]).length,headings:info.headings,link_count:info.linkCount,clean_text_preview:(info.cleanText||'').slice(0,300)+'…'}]))};
+  document.getElementById('json-out').textContent=JSON.stringify(data,null,2);
 }
-
-function exportCSV() {
-  let csv = 'Old URL,Old Path,New Path,Type\n';
-  getTableData().forEach(r => csv += `"${r.old_url}","${r.old_path}","${r.new_path}","${r.type}"\n`);
-  dl('redirects.csv', csv, 'text/csv');
+function downloadJSON(){
+  updateJSON();dl('site-pages.json',document.getElementById('json-out').textContent,'application/json');
 }
-function exportApache() {
-  let out = '# 301 Redirects — Site Migration\nRewriteEngine On\n\n';
-  getTableData().filter(r=>r.type==='301').forEach(r => out += `Redirect 301 ${r.old_path} ${r.new_path}\n`);
-  dl('redirects.htaccess', out, 'text/plain');
-}
-function exportNginx() {
-  let out = '# 301 Redirects — Site Migration\n\n';
-  getTableData().filter(r=>r.type==='301').forEach(r => out += `rewrite ^${r.old_path}$ ${r.new_path} permanent;\n`);
-  dl('redirects.nginx.conf', out, 'text/plain');
-}
-
-// ── JSON ───────────────────────────────────────────────────────────────────
-function updateJSON() {
-  const data = {
-    base_url: baseUrl,
-    crawled_at: new Date().toISOString(),
-    total_pages: Object.keys(pages).length,
-    pages: Object.fromEntries(Object.entries(pages).map(([url, info]) => [
-      url, {...info, is_nav: navUrls.has(url)}
-    ]))
-  };
-  document.getElementById('json-out').textContent = JSON.stringify(data, null, 2);
-}
-
-function downloadJSON() {
-  updateJSON();
-  const txt = document.getElementById('json-out').textContent;
-  dl('site-pages.json', txt, 'application/json');
-}
-
-function dl(name, content, type) {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([content], {type}));
-  a.download = name;
-  a.click();
-}
+function dl(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();}
 </script>
 </body>
 </html>
