@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Site Migration Crawler</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;
+  --border:#30363d;--accent:#58a6ff;--accent2:#3fb950;
+  --accent3:#f78166;--warn:#e3b341;
+  --text:#e6edf3;--muted:#7d8590;
+  --font:'Syne',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:1.25rem 2rem;display:flex;align-items:center;gap:1rem}
+.logo{font-size:1.5rem;font-weight:800;color:var(--accent);letter-spacing:-.02em}
+.logo span{color:var(--muted);font-weight:400}
+.tag{background:#1f6feb22;border:1px solid #1f6feb55;color:#79c0ff;font-size:.7rem;font-family:var(--mono);padding:.2rem .6rem;border-radius:20px}
+
+/* ── SETUP PANEL ── */
+.setup{padding:2rem;max-width:780px;margin:0 auto;width:100%}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.25rem}
+.card h2{font-size:1rem;font-weight:700;margin-bottom:1rem;color:var(--text)}
+.step-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--accent);color:#000;border-radius:50%;font-size:.75rem;font-weight:800;margin-right:.5rem;flex-shrink:0}
+
+label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:.4rem;font-family:var(--mono)}
+input[type=text],input[type=url]{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:var(--mono);
+  font-size:.85rem;padding:.6rem .9rem;outline:none;transition:border-color .15s;
+}
+input:focus{border-color:var(--accent)}
+.input-note{font-size:.75rem;color:var(--muted);margin-top:.4rem;font-family:var(--mono)}
+.input-note a{color:var(--accent);text-decoration:none}
+.input-note a:hover{text-decoration:underline}
+
+.field{margin-bottom:1rem}
+.field:last-child{margin-bottom:0}
+
+.row{display:flex;gap:1rem;align-items:flex-end}
+.row .field{flex:1}
+
+.btn{
+  padding:.6rem 1.5rem;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text);cursor:pointer;
+  font-family:var(--font);font-size:.9rem;font-weight:700;
+  transition:all .15s;white-space:nowrap;
+}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:#000}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#000}
+.btn.primary:hover{opacity:.85}
+.btn.danger{background:#da3633;border-color:#da3633;color:#fff}
+.btn.sm{padding:.4rem .9rem;font-size:.8rem}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+.worker-test{display:flex;gap:.75rem;align-items:flex-end;margin-top:.75rem}
+.worker-test .field{flex:1;margin:0}
+#worker-status{font-size:.78rem;font-family:var(--mono);padding:.3rem .7rem;border-radius:6px;margin-top:.5rem}
+.status-ok{background:#1a3a2a;color:#56d364;border:1px solid #2ea043}
+.status-err{background:#3a1a1a;color:#f85149;border:1px solid #da3633}
+.status-testing{background:#1a2a3a;color:#79c0ff;border:1px solid #388bfd}
+
+/* ── CRAWLER PROGRESS ── */
+#app{display:none;flex-direction:column;height:calc(100vh - 64px)}
+.app-top{padding:1rem 1.5rem;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.app-top .target{font-family:var(--mono);font-size:.82rem;color:var(--muted)}
+.app-top .target strong{color:var(--accent)}
+.progress-wrap{flex:1;min-width:200px}
+.progress-bar-track{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--accent2);border-radius:3px;transition:width .3s;width:0}
+.progress-label{font-size:.75rem;color:var(--muted);font-family:var(--mono);margin-top:.3rem}
+
+.app-body{display:flex;flex:1;overflow:hidden}
+
+/* ── LOG PANEL ── */
+.log-panel{width:340px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.log-panel h3{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:.75rem 1rem;border-bottom:1px solid var(--border)}
+.log-scroll{flex:1;overflow-y:auto;padding:.5rem}
+.log-entry{font-family:var(--mono);font-size:.72rem;padding:.2rem .4rem;border-radius:4px;display:flex;gap:.5rem;align-items:baseline}
+.log-entry.ok{color:var(--accent2)}
+.log-entry.skip{color:var(--muted)}
+.log-entry.err{color:var(--accent3)}
+.log-entry.nav{color:var(--accent)}
+.log-num{color:var(--muted);min-width:28px;text-align:right}
+.log-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── RESULTS PANEL ── */
+.results-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface)}
+.tab{padding:.65rem 1.25rem;cursor:pointer;font-size:.82rem;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;user-select:none}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+.panel-content{flex:1;overflow-y:auto;padding:1.25rem 1.5rem}
+.pane{display:none}
+.pane.active{display:block}
+
+/* ── TREE ── */
+.tree-actions{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+#q{
+  flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:6px;color:var(--text);font-family:var(--mono);font-size:.8rem;
+  padding:.4rem .75rem;outline:none;
+}
+#q:focus{border-color:var(--accent)}
+
+.tree{font-family:var(--mono);font-size:.79rem}
+.tnode{margin-left:var(--in,0px)}
+.nrow{
+  display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem;
+  border-radius:6px;border-left:2px solid transparent;cursor:default;
+}
+.has-ch .nrow{cursor:pointer}
+.has-ch .nrow:hover{background:var(--surface2);border-left-color:var(--accent)}
+.tog{width:12px;text-align:center;font-size:.7rem;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.tog.leaf{color:var(--border)}
+.has-ch.open > .nrow .tog{transform:rotate(90deg)}
+.nbadge{font-size:.6rem;font-weight:700;padding:.1rem .35rem;border-radius:3px;flex-shrink:0;font-family:var(--font)}
+.nbadge.nav{background:#1f6feb;color:#79c0ff}
+.nbadge.page{background:#1a3a2a;color:#56d364}
+.nlink{color:var(--text);text-decoration:none;font-weight:600;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
+.nlink:hover{color:var(--accent)}
+.nurl{color:var(--muted);font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nchildren{overflow:hidden}
+.has-ch:not(.open)>.nchildren{display:none}
+
+/* ── REDIRECT TABLE ── */
+.tbl-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:1rem;flex-wrap:wrap}
+.tbl-head h2{font-size:.95rem;font-weight:700}
+.export-row{display:flex;gap:.5rem;flex-wrap:wrap}
+
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.75rem}
+thead th{background:var(--surface2);border:1px solid var(--border);padding:.5rem .75rem;text-align:left;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:var(--font);font-size:.68rem;position:sticky;top:0}
+tbody tr{border-bottom:1px solid var(--border)}
+tbody tr:hover{background:var(--surface2)}
+tbody td{padding:.4rem .75rem;vertical-align:middle}
+.old-u code{color:var(--accent3)}
+td input[type=text]{
+  background:var(--surface2);border:1px solid var(--border);border-radius:4px;
+  color:var(--text);font-family:var(--mono);font-size:.72rem;padding:.25rem .5rem;
+  width:100%;outline:none;
+}
+td input:focus{border-color:var(--accent2)}
+td select{
+  background:var(--surface2);border:1px solid var(--border);border-radius:4px;
+  color:var(--accent);font-family:var(--mono);font-size:.72rem;padding:.25rem .5rem;outline:none;
+}
+
+.note{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:.75rem 1rem;font-size:.8rem;color:var(--muted);margin-bottom:1rem}
+.note strong{color:var(--text)}
+
+/* STATS */
+.stats{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.stat{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.6rem 1rem;min-width:110px;text-align:center}
+.stat-v{font-size:1.5rem;font-weight:800;color:var(--accent);font-family:var(--mono)}
+.stat-l{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+/* ── MISC ── */
+.legend{display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%}
+.dot.nav{background:#79c0ff}
+.dot.pg{background:#56d364}
+
+.empty{text-align:center;padding:3rem;color:var(--muted);font-family:var(--mono);font-size:.85rem}
+
+footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-family:var(--mono);border-top:1px solid var(--border);margin-top:auto}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Site<span>Crawler</span></div>
+  <div class="tag">Drupal Migration Tool</div>
+</header>
+
+<!-- SETUP UI -->
+<div class="setup" id="setup">
+
+  <div class="card">
+    <h2><span class="step-badge">1</span> Cloudflare Worker URL</h2>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:1rem">
+      This app needs a Cloudflare Worker to fetch pages for you (avoids browser cross-origin blocks).
+      Deploy <code style="color:var(--accent)">worker.js</code> to your free Cloudflare account, then paste the URL below.
+    </p>
+    <div class="field">
+      <label>Worker URL</label>
+      <input type="url" id="worker-url" placeholder="https://my-scraper.yourname.workers.dev" />
+      <p class="input-note">Don't have one yet? <a href="https://workers.cloudflare.com" target="_blank">Sign up free at workers.cloudflare.com</a> → Workers &amp; Pages → Create → paste worker.js → Deploy.</p>
+    </div>
+    <div class="worker-test">
+      <div class="field">
+        <div id="worker-status" style="display:none"></div>
+      </div>
+      <button class="btn sm" onclick="testWorker()">Test Connection</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step-badge">2</span> Target Site</h2>
+    <div class="row">
+      <div class="field">
+        <label>Site URL to crawl</label>
+        <input type="url" id="site-url" value="https://www.pregnancyparenting.org.au" placeholder="https://example.com" />
+      </div>
+      <div class="field" style="max-width:140px">
+        <label>Max pages</label>
+        <input type="text" id="max-pages" value="300" />
+      </div>
+    </div>
+    <p class="input-note" style="margin-top:.75rem">⚡ Crawl speed: ~1 page/sec. 300 pages ≈ 5 min. Increase limit for larger sites.</p>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end">
+    <button class="btn primary" id="start-btn" onclick="startCrawl()">Start Crawling →</button>
+  </div>
+
+</div>
+
+<!-- CRAWLER APP -->
+<div id="app">
+  <div class="app-top">
+    <div class="target">Crawling: <strong id="crawl-target"></strong></div>
+    <div class="progress-wrap">
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="prog-fill"></div></div>
+      <div class="progress-label" id="prog-label">Starting…</div>
+    </div>
+    <button class="btn sm danger" id="stop-btn" onclick="stopCrawl()">Stop</button>
+    <button class="btn sm" id="restart-btn" onclick="restart()" style="display:none">↩ New Crawl</button>
+  </div>
+
+  <div class="app-body">
+    <!-- LOG -->
+    <div class="log-panel">
+      <h3>Crawl Log</h3>
+      <div class="log-scroll" id="log"></div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results-panel">
+      <div class="tabs">
+        <div class="tab active" onclick="showTab('tree',this)">🌳 Page Tree</div>
+        <div class="tab" onclick="showTab('redir',this)">🔀 Redirect Map</div>
+        <div class="tab" onclick="showTab('json',this)">📋 JSON</div>
+      </div>
+      <div class="panel-content">
+
+        <div class="pane active" id="pane-tree">
+          <div class="stats" id="stats-bar"></div>
+          <div class="legend">
+            <div class="li"><div class="dot nav"></div>Navigation page</div>
+            <div class="li"><div class="dot pg"></div>Content / sub-page</div>
+          </div>
+          <div class="tree-actions">
+            <button class="btn sm" onclick="expandAll()">Expand all</button>
+            <button class="btn sm" onclick="collapseAll()">Collapse all</button>
+            <input id="q" type="text" placeholder="Filter…" oninput="filterTree(this.value)" />
+          </div>
+          <div class="tree" id="tree-root"><div class="empty">Crawl in progress…</div></div>
+        </div>
+
+        <div class="pane" id="pane-redir">
+          <div class="note"><strong>How to use:</strong> Fill in the "New Path" column with the paths your rebuilt HTML site will use. Then export — choose Apache, Nginx, or CSV.</div>
+          <div class="tbl-head">
+            <h2 id="redir-count">Redirect Map</h2>
+            <div class="export-row">
+              <button class="btn sm" onclick="exportCSV()">⬇ CSV</button>
+              <button class="btn sm" onclick="exportApache()">⬇ Apache .htaccess</button>
+              <button class="btn sm" onclick="exportNginx()">⬇ Nginx config</button>
+            </div>
+          </div>
+          <table id="redir-table">
+            <thead><tr><th>Old URL (Drupal)</th><th>Old Path</th><th>New Path (HTML site)</th><th>Type</th></tr></thead>
+            <tbody id="redir-body"></tbody>
+          </table>
+        </div>
+
+        <div class="pane" id="pane-json">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:.75rem">
+            <button class="btn sm" onclick="downloadJSON()">⬇ Download JSON</button>
+          </div>
+          <pre id="json-out" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:1rem;overflow:auto;font-family:var(--mono);font-size:.72rem;color:var(--accent2);max-height:calc(100vh - 260px)"></pre>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>Site Migration Crawler · Cloudflare Worker + GitHub Pages · Free to use</footer>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+let workerUrl = '';
+let baseUrl   = '';
+let maxPages  = 300;
+let running   = false;
+let stopped   = false;
+
+const pages    = {};   // url → {title, desc, links, isNav, depth, parent}
+const navUrls  = new Set();
+const visited  = new Set();
+const queue    = [];   // {url, parent, depth}
+
+const SKIP_EXT = /\.(pdf|jpg|jpeg|png|gif|svg|webp|mp4|mp3|zip|doc|docx|xls|xlsx|ppt|pptx|css|js|ico|woff|woff2|xml|json)(\?.*)?$/i;
+const SKIP_PAT = ['#','mailto:','tel:','javascript:','/user/','/admin/','/node/add','?q=user','logout','feed','?sort=','?page='];
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+function norm(url) {
+  try {
+    const u = new URL(url);
+    u.hash = '';
+    u.search = u.search; // keep query params for now
+    let p = u.pathname.replace(/\/+$/, '') || '/';
+    return u.origin + p;
+  } catch { return url; }
+}
+
+function sameDomain(url) {
+  try { return new URL(url).hostname === new URL(baseUrl).hostname; } catch { return false; }
+}
+
+function shouldSkip(url) {
+  if (SKIP_EXT.test(url)) return true;
+  return SKIP_PAT.some(p => url.includes(p));
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ── WORKER TEST ────────────────────────────────────────────────────────────
+async function testWorker() {
+  const wu = document.getElementById('worker-url').value.trim();
+  if (!wu) { alert('Enter your Worker URL first.'); return; }
+  const el = document.getElementById('worker-status');
+  el.style.display = '';
+  el.className = 'status-testing';
+  el.textContent = 'Testing…';
+  try {
+    const r = await fetch(`${wu}?url=https://httpbin.org/get`, {signal: AbortSignal.timeout(8000)});
+    if (r.ok) {
+      el.className = 'status-ok';
+      el.textContent = '✓ Worker is reachable and working!';
+    } else {
+      el.className = 'status-err';
+      el.textContent = `✗ Worker returned ${r.status}`;
+    }
+  } catch(e) {
+    el.className = 'status-err';
+    el.textContent = `✗ Could not reach worker: ${e.message}`;
+  }
+}
+
+// ── FETCH VIA WORKER ───────────────────────────────────────────────────────
+async function fetchPage(url) {
+  const proxyUrl = `${workerUrl}?url=${encodeURIComponent(url)}`;
+  const r = await fetch(proxyUrl, {signal: AbortSignal.timeout(15000)});
+  const finalUrl = r.headers.get('X-Final-Url') || url;
+  const ct = r.headers.get('Content-Type') || '';
+  if (!ct.includes('text/html')) return {html: null, finalUrl};
+  const html = await r.text();
+  return {html, finalUrl: norm(finalUrl)};
+}
+
+// ── DOM PARSING ────────────────────────────────────────────────────────────
+function parseLinks(html, pageUrl) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  const navSels = ['nav','header nav','.nav','.navigation','.menu','#navigation',
+    '#main-menu','#main-navigation','.main-menu','.primary-menu','[role="navigation"]',
+    '.navbar','.block-menu','.block-system-main-menu'];
+
+  const navLinks = new Set();
+  navSels.forEach(sel => {
+    doc.querySelectorAll(sel + ' a[href]').forEach(a => {
+      try {
+        const abs = norm(new URL(a.getAttribute('href'), pageUrl).href);
+        if (sameDomain(abs) && !shouldSkip(abs)) navLinks.add(abs);
+      } catch {}
+    });
+  });
+
+  const allLinks = new Set();
+  doc.querySelectorAll('a[href]').forEach(a => {
+    try {
+      const abs = norm(new URL(a.getAttribute('href'), pageUrl).href);
+      if (sameDomain(abs) && !shouldSkip(abs)) allLinks.add(abs);
+    } catch {}
+  });
+
+  // Title
+  let title = '';
+  for (const sel of ['h1','.page-title','#page-title','.page-header h1','title']) {
+    const el = doc.querySelector(sel);
+    if (el && el.textContent.trim()) { title = el.textContent.trim(); break; }
+  }
+  if (!title) title = new URL(pageUrl).pathname || pageUrl;
+
+  // Meta desc
+  const metaDesc = doc.querySelector('meta[name="description"]');
+  const desc = metaDesc ? (metaDesc.getAttribute('content') || '') : '';
+
+  return {navLinks: [...navLinks], allLinks: [...allLinks], title: title.slice(0,120), desc};
+}
+
+// ── CRAWL ──────────────────────────────────────────────────────────────────
+async function startCrawl() {
+  workerUrl = document.getElementById('worker-url').value.trim().replace(/\/$/, '');
+  const siteInput = document.getElementById('site-url').value.trim();
+  maxPages = parseInt(document.getElementById('max-pages').value) || 300;
+
+  if (!workerUrl) { alert('Enter your Cloudflare Worker URL.'); return; }
+  if (!siteInput) { alert('Enter the site URL to crawl.'); return; }
+
+  try { baseUrl = norm(siteInput); } catch { alert('Invalid site URL.'); return; }
+
+  document.getElementById('setup').style.display = 'none';
+  const app = document.getElementById('app');
+  app.style.display = 'flex';
+  document.getElementById('crawl-target').textContent = baseUrl;
+
+  queue.push({url: baseUrl, parent: null, depth: 0});
+  running = true; stopped = false;
+  crawlLoop();
+}
+
+async function crawlLoop() {
+  let count = 0;
+  const DELAY = 800; // ms between requests
+
+  while (queue.length > 0 && count < maxPages && !stopped) {
+    const {url, parent, depth} = queue.shift();
+    if (visited.has(url)) continue;
+    visited.add(url);
+    count++;
+
+    updateProgress(count, queue.length);
+    addLog(count, url, 'testing');
+
+    let result;
+    try {
+      result = await fetchPage(url);
+    } catch(e) {
+      addLog(count, `✗ ${url.split('/').pop() || url} (${e.message})`, 'err');
+      await sleep(DELAY);
+      continue;
+    }
+
+    const {html, finalUrl} = result;
+    if (!html) {
+      addLog(count, `skip ${url}`, 'skip');
+      await sleep(DELAY);
+      continue;
+    }
+
+    const {navLinks, allLinks, title, desc} = parseLinks(html, finalUrl);
+
+    // Mark nav URLs
+    navLinks.forEach(u => navUrls.add(u));
+    const isNav = navUrls.has(url) || navUrls.has(finalUrl);
+
+    pages[url] = {title, desc, depth, parent, isNav, finalUrl, allLinks: allLinks.length};
+
+    addLog(count, title || url, isNav ? 'nav' : 'ok');
+
+    // Queue nav links first (front), content links last (back)
+    const newNav = navLinks.filter(u => !visited.has(u) && !queue.find(q=>q.url===u));
+    const newAll = allLinks.filter(u => !visited.has(u) && !navLinks.includes(u) && !queue.find(q=>q.url===u));
+
+    queue.unshift(...newNav.map(u => ({url:u, parent:url, depth:depth+1})));
+    queue.push(...newAll.map(u => ({url:u, parent:url, depth:depth+2})));
+
+    renderTree();
+    updateRedirectTable();
+
+    await sleep(DELAY);
+  }
+
+  running = false;
+  finishCrawl(count);
+}
+
+function stopCrawl() { stopped = true; }
+
+function finishCrawl(count) {
+  document.getElementById('prog-label').textContent = `✓ Done — ${count} pages crawled`;
+  document.getElementById('stop-btn').style.display = 'none';
+  document.getElementById('restart-btn').style.display = '';
+  renderTree();
+  updateRedirectTable();
+  updateJSON();
+}
+
+function restart() {
+  location.reload();
+}
+
+// ── PROGRESS ───────────────────────────────────────────────────────────────
+function updateProgress(done, queued) {
+  const total = Math.min(done + queued, maxPages);
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = `${done} crawled · ${queued} queued`;
+}
+
+// ── LOG ────────────────────────────────────────────────────────────────────
+function addLog(n, text, type) {
+  const el = document.getElementById('log');
+  const d = document.createElement('div');
+  d.className = `log-entry ${type}`;
+  d.innerHTML = `<span class="log-num">${n}</span><span class="log-text" title="${text}">${text}</span>`;
+  el.appendChild(d);
+  el.scrollTop = el.scrollHeight;
+}
+
+// ── TABS ───────────────────────────────────────────────────────────────────
+function showTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('pane-'+name).classList.add('active');
+  if (name === 'json') updateJSON();
+}
+
+// ── TREE RENDER ────────────────────────────────────────────────────────────
+function buildTree() {
+  const root = {url: baseUrl, children: {}};
+  const nodes = {};
+  nodes[baseUrl] = root;
+
+  Object.keys(pages).forEach(url => {
+    if (!nodes[url]) nodes[url] = {url, children: {}};
+    const p = new URL(url);
+    const parts = p.pathname.split('/').filter(Boolean);
+    if (parts.length === 0) return; // root itself
+    const parentPath = '/' + parts.slice(0,-1).join('/');
+    const parentUrl = p.origin + (parentPath || '/');
+    const pNorm = norm(parentUrl);
+    const parent = nodes[pNorm] || root;
+    parent.children[url] = nodes[url];
+  });
+
+  return root;
+}
+
+function renderNode(node, depth) {
+  const url = node.url;
+  const info = pages[url] || {};
+  const isNav = navUrls.has(url) || info.isNav;
+  const kids = Object.values(node.children || {});
+  const hasKids = kids.length > 0;
+  const indent = depth * 20;
+  const badge = isNav
+    ? '<span class="nbadge nav">NAV</span>'
+    : '<span class="nbadge page">PAGE</span>';
+  const tog = hasKids
+    ? '<span class="tog">▶</span>'
+    : '<span class="tog leaf">·</span>';
+  const title = info.title || url;
+  const childHtml = kids.map(c => renderNode(c, depth+1)).join('');
+  const childDiv = hasKids ? `<div class="nchildren">${childHtml}</div>` : '';
+  const onclick = hasKids ? 'onclick="toggleNode(this)"' : '';
+  return `
+  <div class="tnode ${hasKids?'has-ch':''}" style="--in:${indent}px">
+    <div class="nrow" ${onclick}>${tog}${badge}
+      <a href="${url}" target="_blank" class="nlink" title="${title}">${title}</a>
+      <span class="nurl">${url.replace(baseUrl,'')}</span>
+    </div>${childDiv}
+  </div>`;
+}
+
+function renderTree() {
+  const treeData = buildTree();
+  const html = renderNode(treeData, 0);
+  document.getElementById('tree-root').innerHTML = html;
+
+  // Stats
+  const total = Object.keys(pages).length;
+  const navCount = [...navUrls].filter(u => u in pages).length;
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat"><div class="stat-v">${total}</div><div class="stat-l">Pages</div></div>
+    <div class="stat"><div class="stat-v">${navCount}</div><div class="stat-l">Nav</div></div>
+    <div class="stat"><div class="stat-v">${total - navCount}</div><div class="stat-l">Sub-pages</div></div>
+    <div class="stat"><div class="stat-v">${queue.length}</div><div class="stat-l">Queued</div></div>`;
+
+  // Auto-open top nodes
+  document.querySelectorAll('#tree-root > .tnode').forEach(n => n.classList.add('open'));
+}
+
+function toggleNode(row) { row.closest('.tnode').classList.toggle('open'); }
+function expandAll() { document.querySelectorAll('.tnode.has-ch').forEach(n => n.classList.add('open')); }
+function collapseAll() { document.querySelectorAll('.tnode.has-ch').forEach(n => n.classList.remove('open')); }
+
+function filterTree(q) {
+  const nodes = document.querySelectorAll('.tnode');
+  if (!q) { nodes.forEach(n => n.style.display = ''); return; }
+  q = q.toLowerCase();
+  nodes.forEach(n => {
+    const link = n.querySelector('.nlink')?.textContent?.toLowerCase() || '';
+    const url  = n.querySelector('.nurl')?.textContent?.toLowerCase() || '';
+    n.style.display = (link.includes(q) || url.includes(q)) ? '' : 'none';
+  });
+  nodes.forEach(n => {
+    if (n.style.display === '') {
+      let p = n.parentElement?.closest('.tnode');
+      while(p) { p.style.display=''; p=p.parentElement?.closest('.tnode'); }
+    }
+  });
+}
+
+// ── REDIRECT TABLE ─────────────────────────────────────────────────────────
+function updateRedirectTable() {
+  const urls = Object.keys(pages).sort();
+  document.getElementById('redir-count').textContent = `Redirect Map (${urls.length} URLs)`;
+  const rows = urls.map(url => {
+    const slug = new URL(url).pathname || '/';
+    return `<tr>
+      <td class="old-u"><code title="${url}">${url}</code></td>
+      <td><code>${slug}</code></td>
+      <td><input type="text" value="${slug}" /></td>
+      <td><select><option>301</option><option>302</option><option>Gone</option><option>Keep</option></select></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('redir-body').innerHTML = rows;
+}
+
+function getTableData() {
+  return [...document.querySelectorAll('#redir-table tbody tr')].map(r => {
+    const tds = r.querySelectorAll('td');
+    return {
+      old_url: tds[0].querySelector('code').textContent,
+      old_path: tds[1].querySelector('code').textContent,
+      new_path: tds[2].querySelector('input').value,
+      type: tds[3].querySelector('select').value,
+    };
+  });
+}
+
+function exportCSV() {
+  let csv = 'Old URL,Old Path,New Path,Type\n';
+  getTableData().forEach(r => csv += `"${r.old_url}","${r.old_path}","${r.new_path}","${r.type}"\n`);
+  dl('redirects.csv', csv, 'text/csv');
+}
+function exportApache() {
+  let out = '# 301 Redirects — Site Migration\nRewriteEngine On\n\n';
+  getTableData().filter(r=>r.type==='301').forEach(r => out += `Redirect 301 ${r.old_path} ${r.new_path}\n`);
+  dl('redirects.htaccess', out, 'text/plain');
+}
+function exportNginx() {
+  let out = '# 301 Redirects — Site Migration\n\n';
+  getTableData().filter(r=>r.type==='301').forEach(r => out += `rewrite ^${r.old_path}$ ${r.new_path} permanent;\n`);
+  dl('redirects.nginx.conf', out, 'text/plain');
+}
+
+// ── JSON ───────────────────────────────────────────────────────────────────
+function updateJSON() {
+  const data = {
+    base_url: baseUrl,
+    crawled_at: new Date().toISOString(),
+    total_pages: Object.keys(pages).length,
+    pages: Object.fromEntries(Object.entries(pages).map(([url, info]) => [
+      url, {...info, is_nav: navUrls.has(url)}
+    ]))
+  };
+  document.getElementById('json-out').textContent = JSON.stringify(data, null, 2);
+}
+
+function downloadJSON() {
+  updateJSON();
+  const txt = document.getElementById('json-out').textContent;
+  dl('site-pages.json', txt, 'application/json');
+}
+
+function dl(name, content, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type}));
+  a.download = name;
+  a.click();
+}
+</script>
+</body>
+</html>
