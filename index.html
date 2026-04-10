@@ -178,7 +178,7 @@ footer{text-align:center;padding:.85rem;color:var(--mu);font-size:.7rem;font-fam
 <header>
   <div class="logo">Site<span>Crawler</span></div>
   <div class="tag">Drupal Migration Tool</div>
-  <div class="vtag">v3.1</div>
+  <div class="vtag">v3.3</div>
 </header>
 
 <!-- SETUP -->
@@ -759,6 +759,17 @@ function genPageHTML(url,info,sitename,bodyOverride){
   const yr=new Date().getFullYear();
   let content=bodyOverride||info.contentHTML||'<p>Content coming soon.</p>';
   content=content.replace(/<h1[^>]*>.*?<\/h1>/is,'');
+
+  // If no images in content but page has scraped images, inject featured image
+  if(!bodyOverride && !/\<img/i.test(content) && info.images && info.images.length>0){
+    const img=info.images[0];
+    const imgHtml='<div style="float:right;margin:0 0 1.5rem 2rem;max-width:42%;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.12)"><img src="'+img.src+'" alt="'+(img.alt||info.title)+'" style="width:100%;height:auto;display:block"></div>';
+    // Insert after first paragraph
+    const firstP=content.indexOf('</p>');
+    if(firstP!==-1){content=content.slice(0,firstP+4)+imgHtml+content.slice(firstP+4);}
+    else{content=imgHtml+content;}
+  }
+
   content=content.replace(/href="https?:\/\/[^"]*"/gi,m=>{
     try{const u=new URL(m.slice(6,-1));if(u.hostname===new URL(baseUrl).hostname){const p=u.pathname.replace(/\/$/,'')||'/';return 'href="'+(p==='/'?'/':p+'/')+'\"';}}catch{}return m;});
   let crumbs='<a href="/">Home</a>';
@@ -833,7 +844,8 @@ async function genOnePage(url){
   const info=pages[url];if(!info){alert('Page not found.');return;}
   aiResults[url]={...(aiResults[url]||{}),status:'generating',approved:false};
   renderAIList();
-  const prompt='You are rebuilding a website page as clean semantic HTML.\n\nPage title: '+info.title+'\nURL path: '+new URL(url).pathname+'\nMeta description: '+(info.desc||'none')+'\n\nHeadings:\n'+((info.headings||[]).map(h=>h.level+': '+h.text).join('\n')||'none')+'\n\nContent:\n---\n'+(info.cleanText||'').slice(0,3000)+'\n---\n\nWrite ONLY the inner HTML for the page body content div. No html/head/body/nav/header/footer tags. Use h2, h3, p, ul, ol, blockquote, table as appropriate. Keep all facts accurate. Return only HTML, no markdown.';
+  const imgs=(info.images||[]).slice(0,6).map((img,i)=>'Image '+(i+1)+': '+img.src+(img.alt?' (alt: '+img.alt+')':'')).join('\n');
+  const prompt='You are rebuilding a website page as clean semantic HTML.\n\nPage title: '+info.title+'\nURL path: '+new URL(url).pathname+'\nMeta description: '+(info.desc||'none')+'\n\nHeadings:\n'+((info.headings||[]).map(h=>h.level+': '+h.text).join('\n')||'none')+'\n\n'+(imgs?'Available images (use these in the content where relevant):\n'+imgs+'\n\n':'')+'Content:\n---\n'+(info.cleanText||'').slice(0,3000)+'\n---\n\nWrite ONLY the inner HTML for the <div class="pb"> content area. Rules:\n- No html/head/body/nav/header/footer tags\n- Use semantic HTML: h2, h3, p, ul, ol, blockquote, table\n- If images are provided above, embed them using <img src="..." alt="..."> placed naturally within the content where they are most relevant. For a main feature image, use style="float:right;margin:0 0 1.5rem 2rem;max-width:45%;border-radius:10px" on the img tag\n- Keep all facts accurate\n- Return only HTML, no markdown, no explanation';
   try{
     const wUrl=document.getElementById('worker-url').value.trim().replace(/\/$/,'');
     const res=await fetch(wUrl+'/ai',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':apiKey},
