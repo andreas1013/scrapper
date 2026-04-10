@@ -138,6 +138,45 @@ td input:focus{border-color:var(--accent2)}
 td select{background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--accent);font-family:var(--mono);font-size:.72rem;padding:.25rem .5rem;outline:none}
 .note{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:.75rem 1rem;font-size:.8rem;color:var(--muted);margin-bottom:1rem}
 .note strong{color:var(--text)}
+
+/* ── AI TAB ── */
+.ai-setup-bar{display:flex;gap:1.5rem;align-items:flex-end;margin-bottom:1.25rem;flex-wrap:wrap;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1.25rem}
+.ai-key-group{flex:1;min-width:260px}
+.ai-key-group label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem;font-family:var(--mono)}
+.ai-stats-row{display:flex;gap:1rem;flex-shrink:0}
+.ai-stat{text-align:center;min-width:80px}
+.ai-stat span{display:block;font-size:1.4rem;font-weight:800;color:var(--accent);font-family:var(--mono)}
+.ai-stat small{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ai-empty{text-align:center;padding:3rem;color:var(--muted);font-family:var(--mono);font-size:.85rem}
+.ai-page-grid{display:flex;flex-direction:column;gap:.5rem}
+.ai-page-row{display:flex;align-items:center;gap:.75rem;padding:.6rem .9rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;transition:border-color .15s}
+.ai-page-row:hover{border-color:var(--accent)}
+.ai-page-row.approved{border-color:var(--accent2);background:#1a3a2a22}
+.ai-page-row.generating{border-color:var(--warn);background:#2a1a0022}
+.ai-page-info{flex:1;overflow:hidden}
+.ai-page-title{font-size:.85rem;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ai-page-url{font-size:.7rem;color:var(--muted);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ai-status{font-size:.7rem;font-family:var(--mono);padding:.2rem .5rem;border-radius:4px;flex-shrink:0;min-width:80px;text-align:center}
+.ai-status.pending{background:var(--surface2);color:var(--muted)}
+.ai-status.generating{background:#2a1a00;color:var(--warn)}
+.ai-status.approved{background:#1a3a2a;color:var(--accent2)}
+.ai-status.error{background:#3a1a1a;color:var(--accent3)}
+.ai-row-btns{display:flex;gap:.4rem;flex-shrink:0}
+/* AI Modal */
+#ai-modal{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.8);align-items:flex-start;justify-content:center;padding:1.5rem;overflow-y:auto}
+#ai-modal.open{display:flex}
+.ai-modal-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:100%;max-width:1100px;display:flex;flex-direction:column;margin:auto;height:90vh}
+.ai-modal-head{padding:.9rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.ai-modal-title{font-size:.95rem;font-weight:700}
+.ai-modal-url{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.ai-modal-actions{display:flex;gap:.5rem;align-items:center;margin-left:auto;flex-wrap:wrap}
+.ai-modal-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface2)}
+.ai-mtab{padding:.5rem 1rem;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s}
+.ai-mtab:hover{color:var(--text)}.ai-mtab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.ai-modal-body{flex:1;overflow:hidden;display:flex;flex-direction:column}
+#ai-preview-frame{flex:1;border:none;background:white;width:100%}
+#ai-code-view{flex:1;overflow:auto;padding:1rem;font-family:var(--mono);font-size:.72rem;color:var(--accent2);background:var(--surface2);white-space:pre-wrap;word-break:break-all;margin:0}
+
 footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-family:var(--mono);border-top:1px solid var(--border);margin-top:auto}
 </style>
 </head>
@@ -146,7 +185,7 @@ footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-f
 <header>
   <div class="logo">Site<span>Crawler</span></div>
   <div class="tag">Drupal Migration Tool</div>
-  <div class="tag" style="background:#1a3a2a;border-color:#2ea04355;color:#56d364;margin-left:auto">v2.6</div>
+  <div class="tag" style="background:#1a3a2a;border-color:#2ea04355;color:#56d364;margin-left:auto">v3.0</div>
   <div class="tag" style="background:#1a3a2a;border-color:#2ea04355;color:#56d364;margin-left:auto"></div>
 </header>
 
@@ -202,6 +241,7 @@ footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-f
         <div class="tab active" onclick="showTab('tree',this)">🌳 Page Tree</div>
         <div class="tab" onclick="showTab('redir',this)">🔀 Redirect Map</div>
         <div class="tab" onclick="showTab('export',this)">📦 Export Static Site</div>
+        <div class="tab" onclick="showTab('ai',this)">🤖 AI Regenerate</div>
         <div class="tab" onclick="showTab('json',this)">📋 JSON</div>
       </div>
       <div class="panel-content">
@@ -283,6 +323,48 @@ footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-f
               <li>The <code style="color:var(--accent)">.htaccess</code> handles all 301 redirects automatically</li>
               <li>Review each page and replace placeholder content with your real content</li>
             </ol>
+          </div>
+        </div>
+
+        <div class="pane" id="pane-ai">
+          <div class="ai-setup-bar">
+            <div class="ai-key-group">
+              <label>Anthropic API Key</label>
+              <input type="password" id="ai-key" placeholder="sk-ant-..." autocomplete="off" />
+              <p class="input-note">Key stays in your browser — sent only to your Cloudflare Worker, which forwards it to Anthropic.</p>
+            </div>
+            <div class="ai-stats-row">
+              <div class="ai-stat"><span id="ai-done-count">0</span><small>Generated</small></div>
+              <div class="ai-stat"><span id="ai-total-count">0</span><small>Total pages</small></div>
+              <div class="ai-stat"><span id="ai-cost-est">$0.00</span><small>Est. cost</small></div>
+            </div>
+          </div>
+          <div class="note"><strong>How it works:</strong> Click <em>Generate</em> on any page. Claude rewrites the content as clean HTML using the MA brand design. Preview it in the browser before accepting. Only approved pages go into the ZIP export.</div>
+          <div id="ai-page-list"><div class="ai-empty">Run a crawl first, then come back here.</div></div>
+        </div>
+
+        <!-- AI Preview Modal -->
+        <div id="ai-modal" onclick="closeAIModal(event)">
+          <div class="ai-modal-box">
+            <div class="ai-modal-head">
+              <div>
+                <div class="ai-modal-title" id="ai-modal-title"></div>
+                <div class="ai-modal-url" id="ai-modal-url"></div>
+              </div>
+              <div class="ai-modal-actions">
+                <button class="btn sm" onclick="regenerateCurrent()">↺ Regenerate</button>
+                <button class="btn sm" style="background:#3fb950;border-color:#3fb950;color:#000" onclick="approveCurrent()">✓ Approve & Use</button>
+                <button class="modal-close" onclick="closeAIModal()">✕</button>
+              </div>
+            </div>
+            <div class="ai-modal-tabs">
+              <div class="ai-mtab active" onclick="switchAIView('preview',this)">Preview</div>
+              <div class="ai-mtab" onclick="switchAIView('code',this)">HTML Code</div>
+            </div>
+            <div class="ai-modal-body">
+              <iframe id="ai-preview-frame" sandbox="allow-same-origin allow-scripts"></iframe>
+              <pre id="ai-code-view" style="display:none"></pre>
+            </div>
           </div>
         </div>
 
@@ -665,27 +747,6 @@ function dl(name,content,type){const a=document.createElement('a');a.href=URL.cr
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 // ── STATIC SITE EXPORT ────────────────────────────────────────────────────
-function buildNavHTML(navstyle, sitename, primaryColor, currentUrl) {
-  // Only true top-level nav items: must be a nav page AND have a short path (1 segment max)
-  const navItems = Object.entries(pages)
-    .filter(([url, info]) => (info.isNav || navUrls.has(url)) && info.depth <= 1)
-    .filter(([url]) => {
-      try { return new URL(url).pathname.split('/').filter(Boolean).length <= 1; } catch { return false; }
-    })
-    .slice(0, 10) // hard cap at 10 nav items
-    .map(([url, info]) => {
-      const path = urlToPath(url);
-      const active = url === currentUrl ? ' class="active"' : '';
-      const cleanSlug = (() => { try { const p = new URL(url).pathname.replace(/\/$/, ''); return p || '/'; } catch { return '/'; } })();
-      return `<li><a href="${cleanSlug}/"${active}>${info.title || url}</a></li>`;
-    }).join('\n      ');
-
-  if (navstyle === 'sidebar') {
-    return `<nav class="sidebar"><div class="site-brand"><a href="/">${sitename}</a></div><ul>${navItems}</ul></nav>`;
-  }
-  return `<nav class="topnav"><div class="site-brand"><a href="/">${sitename}</a></div><ul>${navItems}</ul><button class="nav-toggle" onclick="this.closest('nav').classList.toggle('open')">☰</button></nav>`;
-}
-
 function urlToPath(url) {
   try {
     let path = new URL(url).pathname.replace(/^\//, '').replace(/\/$/, '');
@@ -693,6 +754,59 @@ function urlToPath(url) {
     return path + '/index.html';
   } catch { return 'index.html'; }
 }
+
+function buildNavHTML(navstyle, sitename, primaryColor, currentUrl) {
+  // Build a 2-level nav: top-level items (depth 0-1, 1 path segment) with dropdown children
+  const allPageEntries = Object.entries(pages);
+
+  // Top-level nav items: 1 path segment, is nav
+  const topItems = allPageEntries.filter(([url, info]) => {
+    try {
+      const parts = new URL(url).pathname.split('/').filter(Boolean);
+      return parts.length <= 1 && (info.isNav || navUrls.has(url));
+    } catch { return false; }
+  });
+
+  // Build children map: for each top item, find pages that start with its path
+  const navLinks = topItems.map(([url, info]) => {
+    const topPath = (() => { try { return new URL(url).pathname.replace(/\/$/, ''); } catch { return ''; } })();
+    const isActive = url === currentUrl;
+
+    // Find children: pages whose path starts with this top path and are 1 level deeper
+    const children = allPageEntries.filter(([cUrl, cInfo]) => {
+      if (cUrl === url) return false;
+      try {
+        const cPath = new URL(cUrl).pathname.replace(/\/$/, '');
+        const cParts = cPath.split('/').filter(Boolean);
+        const topParts = topPath.split('/').filter(Boolean);
+        return topParts.length > 0 && cPath.startsWith(topPath + '/') && cParts.length === topParts.length + 1;
+      } catch { return false; }
+    });
+
+    const slug = topPath || '/';
+    const href = slug === '/' ? '/' : slug + '/';
+    const activeClass = isActive ? ' active' : '';
+
+    if (children.length > 0) {
+      const childLinks = children.map(([cUrl, cInfo]) => {
+        const cPath = (() => { try { return new URL(cUrl).pathname.replace(/\/$/, ''); } catch { return ''; } })();
+        const cActive = cUrl === currentUrl ? ' class="active"' : '';
+        return `<li><a href="${cPath}/"${cActive}>${cInfo.title || cUrl}</a></li>`;
+      }).join('\n');
+      return `<li class="has-dropdown${activeClass}"><a href="${href}">${info.title || url}</a><ul class="dropdown">${childLinks}</ul></li>`;
+    }
+    return `<li><a href="${href}"class="${activeClass}">${info.title || url}</a></li>`;
+  }).join('\n');
+
+  const brand = `<div class="site-brand"><a href="/">${sitename}</a></div>`;
+  const toggle = `<button class="nav-toggle" onclick="this.closest('nav').classList.toggle('open')">&#9776;</button>`;
+
+  if (navstyle === 'sidebar') {
+    return `<nav class="sidebar">${brand}<ul>${navLinks}</ul></nav>`;
+  }
+  return `<nav class="topnav">${brand}<ul class="nav-list">${navLinks}</ul>${toggle}</nav>`;
+}
+
 
 function generatePageHTML(url, info, sitename, primaryColor, navstyle) {
   const nav = buildNavHTML(navstyle, sitename, primaryColor, url);
@@ -712,6 +826,12 @@ function generatePageHTML(url, info, sitename, primaryColor, navstyle) {
   // Remove first h1 from content to avoid duplication with our page-title h1
   let content = (info.contentHTML || '<p>Content coming soon.</p>');
   content = content.replace(/<h1[^>]*>.*?<\/h1>/is, '');
+  // Strip Drupal artifacts
+  content = content.replace(/<[^>]*class="[^"]*skip[^"]*"[^>]*>.*?<\/[^>]+>/gis, '');
+  content = content.replace(/<[^>]*id="skip[^"]*"[^>]*>.*?<\/[^>]+>/gis, '');
+  content = content.replace(/<[^>]*class="[^"]*contextual[^"]*"[^>]*>.*?<\/[^>]+>/gis, '');
+  content = content.replace(/You are here[\s\S]{0,200}?(<\/[^>]+>)/gi, '');
+  content = content.replace(/<div[^>]*class="[^"]*messages[^"]*"[^>]*>[\s\S]*?<\/div>/gi, '');
 
   // Rewrite all internal links to relative paths
   const hostname = new URL(baseUrl).hostname;
@@ -728,6 +848,13 @@ function generatePageHTML(url, info, sitename, primaryColor, navstyle) {
   const desc = info.desc || '';
   const year = new Date().getFullYear();
 
+  const isHome = parts.length === 0;
+  const heroSection = isHome ? '' : `
+    <div class="page-hero">
+      <div class="breadcrumb">${crumbs}</div>
+      <h1 class="page-title">${info.title}</h1>
+    </div>`;
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -740,131 +867,214 @@ ${desc ? `<meta name="description" content="${desc.replace(/"/g,'&quot;')}">` : 
 <body class="${bodyClass}">
   ${nav}
   <div class="page-wrapper">
+    ${heroSection}
     <main class="main-content">
-      ${parts.length > 0 ? `<div class="breadcrumb">${crumbs}</div>` : ''}
-      <h1 class="page-title">${info.title}</h1>
+      ${isHome ? '' : ''}
       <div class="page-body">
         ${content}
       </div>
     </main>
     <footer class="site-footer">
-      <p>&copy; ${year} ${sitename}. All rights reserved.</p>
+      <div class="footer-inner">
+        <div class="footer-brand-col">
+          <span class="footer-brand">${sitename}</span>
+          <p>Supporting parents through pregnancy, birth and early parenting across Australia.</p>
+        </div>
+        <div class="footer-col">
+          <h4>About Us</h4>
+          <ul>
+            <li><a href="/what-we-do/">What we do</a></li>
+            <li><a href="/our-mission-and-vision/">Our Mission and Values</a></li>
+            <li><a href="/media/">Press Links</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Security</h4>
+          <ul>
+            <li><a href="/our-privacy-policy/">Our Security Policy</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact Us</h4>
+          <p>Ph: (02) 9986 2282<br>Email: info@montessori.org.au</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-copy">&copy; ${year} ${sitename}. All rights reserved.</span>
+      </div>
     </footer>
   </div>
+  <script>
+    // Mobile dropdown toggles
+    document.querySelectorAll('.has-dropdown > a').forEach(a => {
+      a.addEventListener('click', e => {
+        if (window.innerWidth <= 900) {
+          e.preventDefault();
+          a.closest('.has-dropdown').classList.toggle('open');
+        }
+      });
+    });
+  </script>
 </body>
 </html>`;
 }
 
 function generateCSS(primaryColor, navstyle) {
-  return `/* Generated by SiteCrawler Migration Tool */
-:root {
-  --primary: ${primaryColor};
-  --primary-light: ${primaryColor}22;
-  --text: #1a1a2e;
-  --muted: #555;
-  --bg: #f9f9f7;
-  --surface: #ffffff;
-  --border: #e0e0e0;
-  --nav-height: 64px;
-  --sidebar-width: 260px;
-  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
+  return `@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap');
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#4C4CF4;
+  --purple:#9F34F9;
+  --gradient:linear-gradient(135deg,#4C4CF4,#9F34F9);
+  --bg:#F9F9FD;
+  --text:#2D3748;
+  --muted:#718096;
+  --border:#E2E8F0;
+  --surface:#FFFFFF;
+  --nav-h:64px;
+  --radius:14px;
+  --radius-sm:8px;
+  --glass:rgba(255,255,255,0.72);
+  --glass-border:rgba(255,255,255,0.45);
+  --shadow:0 4px 24px rgba(76,76,244,.08),0 1px 4px rgba(0,0,0,.04);
+  --shadow-hover:0 8px 32px rgba(76,76,244,.14);
+  --font:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.75;font-size:16px;-webkit-font-smoothing:antialiased}
 
-body {
-  font-family: var(--font);
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.7;
+/* ── GLASS NAV ── */
+.topnav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:var(--nav-h);
+  background:var(--glass);
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  border-bottom:1px solid var(--glass-border);
+  display:flex;align-items:center;padding:0 2rem;gap:1.5rem;
+  box-shadow:0 1px 0 rgba(255,255,255,.6),0 2px 20px rgba(76,76,244,.06);
 }
+.topnav .site-brand a{
+  font-size:1.05rem;font-weight:700;letter-spacing:-.02em;text-decoration:none;
+  background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  white-space:nowrap;
+}
+.nav-list{display:flex;list-style:none;height:var(--nav-h);align-items:center;margin-left:auto}
+.nav-list>li{position:relative;height:100%;display:flex;align-items:center}
+.nav-list>li>a{
+  display:flex;align-items:center;height:100%;
+  color:var(--text);text-decoration:none;
+  padding:0 .9rem;font-size:.875rem;font-weight:500;
+  white-space:nowrap;transition:color .15s;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.nav-list>li>a:hover{color:var(--primary)}
+.nav-list>li>a.active{color:var(--primary);border-bottom-color:var(--primary)}
+.nav-list>li.has-dropdown>a::after{content:' ⌄';opacity:.5;font-size:.75rem;margin-left:.1rem}
 
-/* ── TOP NAV ── */
-.topnav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  height: var(--nav-height);
-  background: var(--primary);
-  display: flex; align-items: center; gap: 2rem;
-  padding: 0 2rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+/* Dropdown — glass */
+.dropdown{
+  display:none;position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);
+  background:var(--glass);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);
+  border:1px solid var(--glass-border);border-radius:var(--radius);
+  min-width:210px;list-style:none;
+  box-shadow:var(--shadow);overflow:hidden;z-index:500;
 }
-.topnav .site-brand a {
-  color: #fff; font-size: 1.2rem; font-weight: 700; text-decoration: none; white-space: nowrap;
+.nav-list>li.has-dropdown:hover .dropdown{display:block}
+.dropdown li a{
+  display:block;padding:.65rem 1.1rem;color:var(--text);
+  text-decoration:none;font-size:.875rem;font-weight:400;
+  border-bottom:1px solid rgba(226,232,240,.6);transition:all .12s;
 }
-.topnav ul { display: flex; gap: .15rem; list-style: none; flex-wrap: nowrap; overflow: hidden; }
-.nav-toggle { display: none; background: none; border: 1px solid rgba(255,255,255,.4); color: #fff; padding: .3rem .6rem; border-radius: 6px; cursor: pointer; font-size: 1rem; margin-left: auto; }
-.topnav ul a {
-  color: rgba(255,255,255,.85); text-decoration: none;
-  padding: .4rem .75rem; border-radius: 6px; font-size: .9rem;
-  transition: background .15s, color .15s;
-}
-.topnav ul a:hover, .topnav ul a.active { background: rgba(255,255,255,.2); color: #fff; }
-.has-topnav .page-wrapper { padding-top: var(--nav-height); }
+.dropdown li:last-child a{border-bottom:none}
+.dropdown li a:hover{background:rgba(76,76,244,.07);color:var(--primary);padding-left:1.4rem}
 
-/* ── SIDEBAR ── */
-.sidebar {
-  position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-width);
-  background: var(--surface); border-right: 1px solid var(--border);
-  overflow-y: auto; padding: 1.5rem 0;
-}
-.sidebar .site-brand { padding: 0 1.25rem 1.25rem; border-bottom: 1px solid var(--border); margin-bottom: .75rem; }
-.sidebar .site-brand a { color: var(--primary); font-size: 1.1rem; font-weight: 700; text-decoration: none; }
-.sidebar ul { list-style: none; }
-.sidebar ul a {
-  display: block; padding: .5rem 1.25rem; color: var(--muted);
-  text-decoration: none; font-size: .9rem; border-left: 3px solid transparent;
-  transition: all .15s;
-}
-.sidebar ul a:hover, .sidebar ul a.active {
-  color: var(--primary); border-left-color: var(--primary); background: var(--primary-light);
-}
-.has-sidebar .page-wrapper { margin-left: var(--sidebar-width); }
+.nav-toggle{display:none;background:none;border:1px solid var(--border);color:var(--text);padding:.35rem .65rem;border-radius:var(--radius-sm);cursor:pointer;font-size:1rem;margin-left:auto}
+.has-topnav .page-wrapper{padding-top:var(--nav-h)}
 
-/* ── PAGE LAYOUT ── */
-.page-wrapper { min-height: 100vh; display: flex; flex-direction: column; }
-.main-content { flex: 1; max-width: 860px; margin: 0 auto; padding: 2.5rem 2rem; width: 100%; }
-
-.breadcrumb { font-size: .8rem; color: var(--muted); margin-bottom: 1.25rem; }
-.breadcrumb a { color: var(--primary); text-decoration: none; }
-.breadcrumb a:hover { text-decoration: underline; }
-
-.page-title {
-  font-size: 2rem; font-weight: 700; color: var(--text);
-  margin-bottom: 1.5rem; padding-bottom: 1rem;
-  border-bottom: 2px solid var(--primary);
+/* ── PAGE HERO ── */
+.page-hero{
+  background:var(--gradient);
+  padding:3.5rem 2rem 3rem;color:white;
+  position:relative;overflow:hidden;
 }
+.page-hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 80% 50%,rgba(255,255,255,.1),transparent 60%);
+  pointer-events:none;
+}
+.page-hero .breadcrumb{color:rgba(255,255,255,.6);font-size:.8rem;margin-bottom:.75rem}
+.page-hero .breadcrumb a{color:rgba(255,255,255,.75);text-decoration:none}
+.page-hero .breadcrumb a:hover{color:white}
+.page-hero .page-title{font-size:2.2rem;font-weight:700;color:white;letter-spacing:-.03em;line-height:1.25}
 
-.page-body { font-size: 1rem; }
-.page-body h2 { font-size: 1.35rem; font-weight: 700; margin: 1.75rem 0 .75rem; color: var(--text); }
-.page-body h3 { font-size: 1.1rem; font-weight: 700; margin: 1.25rem 0 .5rem; color: var(--text); }
-.page-body p { margin-bottom: 1rem; }
-.page-body ul, .page-body ol { margin: .5rem 0 1rem 1.5rem; }
-.page-body li { margin-bottom: .4rem; }
-.page-body a { color: var(--primary); }
-.page-body a:hover { text-decoration: underline; }
-.page-body img { max-width: 100%; border-radius: 8px; margin: 1rem 0; }
-.page-body table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-.page-body th, .page-body td { border: 1px solid var(--border); padding: .6rem .75rem; }
-.page-body th { background: var(--primary-light); font-weight: 700; }
-.page-body blockquote { border-left: 4px solid var(--primary); padding: .75rem 1.25rem; color: var(--muted); margin: 1rem 0; background: var(--primary-light); border-radius: 0 6px 6px 0; }
+/* ── LAYOUT ── */
+.page-wrapper{min-height:100vh;display:flex;flex-direction:column}
+.main-content{flex:1;max-width:940px;margin:0 auto;padding:2.5rem 2rem;width:100%}
+.breadcrumb{display:flex;align-items:center;gap:.35rem;font-size:.8rem;color:var(--muted);margin-bottom:1.5rem;flex-wrap:wrap}
+.breadcrumb a{color:var(--primary);text-decoration:none}
+.page-title{font-size:2rem;font-weight:700;color:var(--text);margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:3px solid var(--primary);letter-spacing:-.02em}
+
+/* ── CONTENT ── */
+.page-body{font-size:1rem;color:var(--text)}
+.page-body h2{font-size:1.35rem;font-weight:600;color:var(--primary);margin-top:2.25rem;margin-bottom:.6rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)}
+.page-body h3{font-size:1.05rem;font-weight:600;color:#9F34F9;margin-top:1.5rem;margin-bottom:.45rem}
+.page-body h4{font-size:1rem;font-weight:600;color:var(--text)}
+.page-body p{margin-bottom:1rem;line-height:1.8;color:var(--text)}
+.page-body ul,.page-body ol{padding-left:1.5rem;margin:.5rem 0 1rem}
+.page-body li{margin-bottom:.4rem}
+.page-body a{color:var(--primary);text-decoration:none;font-weight:500}
+.page-body a:hover{text-decoration:underline}
+.page-body img{max-width:100%;border-radius:var(--radius);margin:1.25rem 0;box-shadow:var(--shadow);height:auto}
+.page-body table{width:100%;border-collapse:collapse;margin:1.25rem 0;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.page-body th{background:var(--gradient);color:white;padding:.75rem 1rem;font-weight:600;font-size:.9rem;text-align:left}
+.page-body td{padding:.7rem 1rem;border-bottom:1px solid var(--border);font-size:.9rem}
+.page-body tr:last-child td{border-bottom:none}
+.page-body tr:nth-child(even) td{background:rgba(76,76,244,.025)}
+.page-body blockquote{border-left:4px solid var(--primary);padding:1rem 1.5rem;background:rgba(76,76,244,.05);border-radius:0 var(--radius) var(--radius) 0;margin:1.25rem 0;color:var(--muted);font-style:italic}
+
+/* ── GLASS CARDS (for content pages that use card grids) ── */
+.page-body .views-row,.page-body .card{
+  background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--glass-border);border-radius:var(--radius);
+  padding:1.25rem;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s;
+}
+.page-body .views-row:hover,.page-body .card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px)}
 
 /* ── FOOTER ── */
-.site-footer {
-  background: var(--primary); color: rgba(255,255,255,.8);
-  text-align: center; padding: 1.5rem;
-  font-size: .85rem; margin-top: auto;
+.site-footer{background:#1A202C;color:rgba(255,255,255,.65);padding:3rem 2rem 1.5rem;margin-top:auto;font-size:.875rem}
+.footer-inner{max-width:940px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2rem;padding-bottom:2rem;border-bottom:1px solid rgba(255,255,255,.08)}
+.footer-brand-col .footer-brand{
+  font-size:1.05rem;font-weight:700;display:block;margin-bottom:.5rem;letter-spacing:-.01em;
+  background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
+.footer-brand-col p{color:rgba(255,255,255,.4);font-size:.82rem;line-height:1.6}
+.footer-col h4{color:rgba(255,255,255,.85);font-size:.8rem;font-weight:600;margin-bottom:.75rem;letter-spacing:.06em;text-transform:uppercase}
+.footer-col ul{list-style:none}
+.footer-col ul li{margin-bottom:.4rem}
+.footer-col ul li a{color:rgba(255,255,255,.5);text-decoration:none;font-size:.85rem;transition:color .15s}
+.footer-col ul li a:hover{color:white}
+.footer-col p{color:rgba(255,255,255,.5);font-size:.85rem;line-height:1.7}
+.footer-bottom{max-width:940px;margin:1.25rem auto 0;display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap}
+.footer-copy{color:rgba(255,255,255,.25);font-size:.78rem}
 
 /* ── RESPONSIVE ── */
-@media (max-width: 768px) {
-  .sidebar { transform: translateX(-100%); }
-  .has-sidebar .page-wrapper { margin-left: 0; }
-  .nav-toggle { display: block; }
-  .topnav ul { display: none; }
-  .topnav.open ul { display: flex; flex-direction: column; position: absolute; top: var(--nav-height); left: 0; right: 0; background: var(--primary); padding: .5rem; }
+@media(max-width:900px){
+  .nav-toggle{display:block}
+  .nav-list{display:none;position:fixed;top:var(--nav-h);left:0;right:0;flex-direction:column;background:var(--glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--glass-border);padding:.5rem 0;height:auto;margin:0;overflow-y:auto;max-height:calc(100vh - var(--nav-h))}
+  .topnav.open .nav-list{display:flex}
+  .nav-list>li{height:auto;width:100%}
+  .nav-list>li>a{padding:.75rem 1.5rem;border-bottom:1px solid var(--border)}
+  .dropdown{position:static;transform:none;box-shadow:none;border:none;border-radius:0;background:rgba(76,76,244,.06);animation:none;display:none}
+  .nav-list>li.has-dropdown.open .dropdown{display:block}
+  .dropdown li a{padding:.6rem 1.5rem .6rem 2.5rem}
+  .footer-inner{grid-template-columns:1fr 1fr}
+  .page-hero .page-title{font-size:1.6rem}
+  .main-content{padding:1.5rem 1rem}
 }
 `;
 }
+
 
 function generateHtaccess() {
   const urls = Object.keys(pages).sort();
@@ -947,6 +1157,212 @@ async function exportStaticSite() {
     btn.textContent = '📦 Download Static Site ZIP';
     alert('Export failed: ' + err.message);
     console.error(err);
+  }
+}
+
+// ── AI REGENERATE ─────────────────────────────────────────────────────────
+const aiResults = {};   // url → {html, approved, status}
+let currentAIUrl = null;
+
+function renderAIList() {
+  const container = document.getElementById('ai-page-list');
+  const urls = Object.keys(pages);
+  if (!urls.length) { container.innerHTML = '<div class="ai-empty">Run a crawl first, then come back here.</div>'; return; }
+
+  document.getElementById('ai-total-count').textContent = urls.length;
+  const approved = Object.values(aiResults).filter(r=>r.approved).length;
+  document.getElementById('ai-done-count').textContent = approved;
+  // estimate: ~1300 tokens per page @ Sonnet pricing $3/M in + $15/M out
+  const est = ((urls.length * 500 * 3 + urls.length * 900 * 15) / 1e6).toFixed(2);
+  document.getElementById('ai-cost-est').textContent = '$' + est;
+
+  container.innerHTML = '<div class="ai-page-grid">' + urls.map(url => {
+    const info = pages[url] || {};
+    const res = aiResults[url] || {};
+    const status = res.status || 'pending';
+    const approvedClass = res.approved ? ' approved' : '';
+    const genClass = status === 'generating' ? ' generating' : '';
+    const statusLabel = res.approved ? 'approved' : status;
+    const canPreview = !!res.html;
+    const safeUrl = url.replace(/'/g, "\'");
+    return `<div class="ai-page-row${approvedClass}${genClass}" id="airow-${btoa(url).replace(/[^a-z0-9]/gi,'').slice(0,12)}">
+      <div class="ai-page-info">
+        <div class="ai-page-title">${info.title || url}</div>
+        <div class="ai-page-url">${url.replace(baseUrl,'') || '/'}</div>
+      </div>
+      <span class="ai-status ${status}">${statusLabel}</span>
+      <div class="ai-row-btns">
+        ${canPreview ? `<button class="btn sm" onclick="openAIPreview('${safeUrl}')">Preview</button>` : ''}
+        <button class="btn sm" onclick="generateOnePage('${safeUrl}')" ${status==='generating'?'disabled':''}>
+          ${status==='generating' ? '...' : res.html ? '↺ Redo' : 'Generate'}
+        </button>
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+async function generateOnePage(url) {
+  const apiKey = document.getElementById('ai-key').value.trim();
+  if (!apiKey) { alert('Enter your Anthropic API key first.'); return; }
+
+  const info = pages[url];
+  if (!info) { alert('Page data not found.'); return; }
+
+  // Mark as generating
+  aiResults[url] = { ...(aiResults[url]||{}), status: 'generating', approved: false };
+  renderAIList();
+
+  // Build a tight prompt — just content section, not full page
+  const prompt = `You are rebuilding a website page as clean semantic HTML.
+
+Page title: ${info.title}
+URL path: ${new URL(url).pathname}
+Meta description: ${info.desc || 'none'}
+
+Headings structure:
+${(info.headings||[]).map(h => h.level + ': ' + h.text).join('\n') || 'none'}
+
+Original page text content:
+---
+${(info.cleanText||'').slice(0, 3000)}
+---
+
+Write ONLY the inner HTML content for the <div class="page-body"> element.
+Do NOT include <html>, <head>, <body>, <nav>, <header>, <footer> tags.
+Use semantic HTML: h2, h3, p, ul, ol, blockquote, table as appropriate.
+Keep all factual content accurate. Make it clean and readable.
+Return only the HTML, no explanation, no markdown fences.`;
+
+  let result;
+  try {
+    const workerUrl = document.getElementById('worker-url').value.trim().replace(/\/$/,'');
+    const res = await fetch(workerUrl + '/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2048,
+        messages: [{ role: 'user', content: prompt }]
+      }),
+      signal: AbortSignal.timeout(30000)
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    if (data.type === 'error') throw new Error(data.error?.message || 'API error');
+    result = data.content?.[0]?.text || '';
+    if (!result) throw new Error('Empty response from API');
+  } catch(e) {
+    aiResults[url] = { status: 'error', html: null, approved: false, error: e.message };
+    renderAIList();
+    alert('Generation failed: ' + e.message);
+    return;
+  }
+
+  // Strip any accidental markdown fences
+  result = result.replace(/^```html?\n?/i, '').replace(/\n?```$/i, '').trim();
+
+  aiResults[url] = { status: 'done', html: result, approved: false };
+  renderAIList();
+  // Auto-open preview
+  openAIPreview(url);
+}
+
+function openAIPreview(url) {
+  const info = pages[url] || {};
+  const res = aiResults[url] || {};
+  currentAIUrl = url;
+
+  document.getElementById('ai-modal-title').textContent = info.title || url;
+  document.getElementById('ai-modal-url').textContent = url;
+
+  // Build full preview page inline
+  const fullHtml = buildFullPreviewPage(url, info, res.html || '<p>No content generated yet.</p>');
+  const frame = document.getElementById('ai-preview-frame');
+  frame.srcdoc = fullHtml;
+  document.getElementById('ai-code-view').textContent = res.html || '';
+
+  switchAIView('preview', document.querySelector('.ai-mtab'));
+  document.getElementById('ai-modal').classList.add('open');
+}
+
+function buildFullPreviewPage(url, info, bodyHtml) {
+  const sitename = document.getElementById('exp-sitename')?.value || 'Site';
+  const color = document.getElementById('exp-color')?.value || '#4C4CF4';
+  const css = generateCSS(color, 'topbar');
+  const parts = new URL(url).pathname.split('/').filter(Boolean);
+  const heroSection = parts.length === 0 ? '' : `
+    <div class="page-hero">
+      <div class="breadcrumb">Home › ${info.title}</div>
+      <h1 class="page-title">${info.title}</h1>
+    </div>`;
+
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${info.title} — ${sitename}</title>
+<style>${css}</style></head>
+<body class="has-topnav">
+  <nav class="topnav"><div class="site-brand"><a href="#">${sitename}</a></div></nav>
+  <div class="page-wrapper">
+    ${heroSection}
+    <main class="main-content"><div class="page-body">${bodyHtml}</div></main>
+    <footer class="site-footer"><div class="footer-bottom" style="max-width:940px;margin:0 auto"><span class="footer-copy">&copy; ${new Date().getFullYear()} ${sitename}</span></div></footer>
+  </div>
+</body></html>`;
+}
+
+function approveCurrent() {
+  if (!currentAIUrl) return;
+  aiResults[currentAIUrl] = { ...(aiResults[currentAIUrl]||{}), approved: true, status: 'done' };
+  renderAIList();
+  closeAIModal();
+}
+
+function regenerateCurrent() {
+  if (!currentAIUrl) return;
+  closeAIModal();
+  generateOnePage(currentAIUrl);
+}
+
+function closeAIModal(e) {
+  if (e && e.target !== document.getElementById('ai-modal')) return;
+  document.getElementById('ai-modal').classList.remove('open');
+  currentAIUrl = null;
+}
+
+function switchAIView(name, el) {
+  document.querySelectorAll('.ai-mtab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.getElementById('ai-preview-frame').style.display = name==='preview' ? 'block' : 'none';
+  document.getElementById('ai-code-view').style.display = name==='code' ? 'block' : 'none';
+}
+
+// Override showTab to render AI list when switching to AI tab
+const _origShowTab = showTab;
+function showTab(name, el) {
+  _origShowTab(name, el);
+  if (name === 'ai') renderAIList();
+}
+
+// Override exportStaticSite to use AI content where approved
+const _origExport = exportStaticSite;
+async function exportStaticSite() {
+  const approvedCount = Object.values(aiResults).filter(r=>r.approved).length;
+  if (approvedCount > 0) {
+    // Temporarily patch pages content for approved pages
+    const origContent = {};
+    Object.entries(aiResults).forEach(([url, res]) => {
+      if (res.approved && res.html && pages[url]) {
+        origContent[url] = pages[url].contentHTML;
+        pages[url].contentHTML = res.html;
+      }
+    });
+    await _origExport();
+    // Restore
+    Object.entries(origContent).forEach(([url, html]) => {
+      if (pages[url]) pages[url].contentHTML = html;
+    });
+  } else {
+    await _origExport();
   }
 }
 </script>
