@@ -3,181 +3,174 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Site Migration Crawler</title>
+<title>SiteCrawler — Drupal Migration Tool</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0d1117;--surface:#161b22;--surface2:#21262d;--border:#30363d;--accent:#58a6ff;--accent2:#3fb950;--accent3:#f78166;--text:#e6edf3;--muted:#7d8590;--font:'Syne',sans-serif;--mono:'JetBrains Mono',monospace}
-body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex;flex-direction:column}
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:1.25rem 2rem;display:flex;align-items:center;gap:1rem}
-.logo{font-size:1.5rem;font-weight:800;color:var(--accent);letter-spacing:-.02em}
-.logo span{color:var(--muted);font-weight:400}
-.tag{background:#1f6feb22;border:1px solid #1f6feb55;color:#79c0ff;font-size:.7rem;font-family:var(--mono);padding:.2rem .6rem;border-radius:20px}
-.setup{padding:2rem;max-width:780px;margin:0 auto;width:100%}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.25rem}
-.card h2{font-size:1rem;font-weight:700;margin-bottom:1rem}
-.step-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--accent);color:#000;border-radius:50%;font-size:.75rem;font-weight:800;margin-right:.5rem}
-label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:.4rem;font-family:var(--mono)}
-input[type=text],input[type=url]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:.85rem;padding:.6rem .9rem;outline:none;transition:border-color .15s}
-input:focus{border-color:var(--accent)}
-.input-note{font-size:.75rem;color:var(--muted);margin-top:.4rem;font-family:var(--mono)}
-.input-note a{color:var(--accent);text-decoration:none}
-.field{margin-bottom:1rem}.field:last-child{margin-bottom:0}
+:root{--bg:#0d1117;--s1:#161b22;--s2:#21262d;--bd:#30363d;--ac:#58a6ff;--ac2:#3fb950;--ac3:#f78166;--warn:#e3b341;--tx:#e6edf3;--mu:#7d8590;--fn:'Syne',sans-serif;--mo:'JetBrains Mono',monospace}
+body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh;display:flex;flex-direction:column}
+header{background:var(--s1);border-bottom:1px solid var(--bd);padding:1rem 2rem;display:flex;align-items:center;gap:1rem;flex-shrink:0}
+.logo{font-size:1.4rem;font-weight:800;color:var(--ac);letter-spacing:-.02em}.logo span{color:var(--mu);font-weight:400}
+.tag{background:#1f6feb22;border:1px solid #1f6feb55;color:#79c0ff;font-size:.7rem;font-family:var(--mo);padding:.2rem .6rem;border-radius:20px}
+.vtag{background:#1a3a2a;border:1px solid #2ea04355;color:#56d364;font-size:.7rem;font-family:var(--mo);padding:.2rem .6rem;border-radius:20px;margin-left:auto}
+/* SETUP */
+.setup{padding:2rem;max-width:760px;margin:0 auto;width:100%}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:1.5rem;margin-bottom:1.25rem}
+.card h2{font-size:.95rem;font-weight:700;margin-bottom:1rem}
+.sbadge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--ac);color:#000;border-radius:50%;font-size:.75rem;font-weight:800;margin-right:.5rem}
+label{display:block;font-size:.8rem;color:var(--mu);margin-bottom:.35rem;font-family:var(--mo)}
+input[type=text],input[type=url],input[type=password],select{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--tx);font-family:var(--mo);font-size:.85rem;padding:.55rem .85rem;outline:none;transition:border-color .15s}
+input:focus,select:focus{border-color:var(--ac)}
+.inote{font-size:.72rem;color:var(--mu);margin-top:.35rem;font-family:var(--mo)}
+.inote a{color:var(--ac);text-decoration:none}
+.field{margin-bottom:.9rem}.field:last-child{margin-bottom:0}
 .row{display:flex;gap:1rem;align-items:flex-end}.row .field{flex:1}
-.btn{padding:.6rem 1.5rem;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-family:var(--font);font-size:.9rem;font-weight:700;transition:all .15s;white-space:nowrap}
-.btn:hover{background:var(--accent);border-color:var(--accent);color:#000}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#000}.btn.primary:hover{opacity:.85}
-.btn.danger{background:#da3633;border-color:#da3633;color:#fff}
-.btn.sm{padding:.4rem .9rem;font-size:.8rem}
-#worker-status{font-size:.78rem;font-family:var(--mono);padding:.3rem .7rem;border-radius:6px;margin-top:.5rem;display:none}
-.status-ok{background:#1a3a2a;color:#56d364;border:1px solid #2ea043}
-.status-err{background:#3a1a1a;color:#f85149;border:1px solid #da3633}
-.status-testing{background:#1a2a3a;color:#79c0ff;border:1px solid #388bfd}
-#app{display:none;flex-direction:column;height:calc(100vh - 64px)}
-.app-top{padding:.85rem 1.5rem;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
-.app-top .target{font-family:var(--mono);font-size:.82rem;color:var(--muted)}
-.app-top .target strong{color:var(--accent)}
-.progress-wrap{flex:1;min-width:200px}
-.progress-bar-track{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
-.progress-bar-fill{height:100%;background:var(--accent2);border-radius:3px;transition:width .3s;width:0}
-.progress-label{font-size:.75rem;color:var(--muted);font-family:var(--mono);margin-top:.3rem}
-.app-body{display:flex;flex:1;overflow:hidden}
-.log-panel{width:290px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
-.log-panel h3{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:.65rem 1rem;border-bottom:1px solid var(--border)}
-.log-scroll{flex:1;overflow-y:auto;padding:.4rem}
-.log-entry{font-family:var(--mono);font-size:.68rem;padding:.18rem .4rem;border-radius:3px;display:flex;gap:.4rem;align-items:baseline}
-.log-entry.ok{color:var(--accent2)}.log-entry.skip{color:var(--muted)}.log-entry.err{color:var(--accent3)}.log-entry.nav{color:var(--accent)}
-.log-num{color:var(--muted);min-width:26px;text-align:right;flex-shrink:0}
-.log-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.results-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface)}
-.tab{padding:.6rem 1.1rem;cursor:pointer;font-size:.8rem;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;user-select:none}
-.tab:hover{color:var(--text)}.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.panel-content{flex:1;overflow-y:auto;padding:1.25rem 1.5rem}
+.btn{padding:.55rem 1.4rem;border-radius:8px;border:1px solid var(--bd);background:var(--s2);color:var(--tx);cursor:pointer;font-family:var(--fn);font-size:.88rem;font-weight:700;transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--ac);border-color:var(--ac);color:#000}
+.btn.pri{background:var(--ac);border-color:var(--ac);color:#000}.btn.pri:hover{opacity:.85}
+.btn.grn{background:var(--ac2);border-color:var(--ac2);color:#000}
+.btn.red{background:#da3633;border-color:#da3633;color:#fff}
+.btn.sm{padding:.35rem .8rem;font-size:.78rem}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+#wstatus{font-size:.75rem;font-family:var(--mo);padding:.3rem .7rem;border-radius:6px;margin-top:.5rem;display:none}
+.sok{background:#1a3a2a;color:#56d364;border:1px solid #2ea043}
+.serr{background:#3a1a1a;color:#f85149;border:1px solid #da3633}
+.stst{background:#1a2a3a;color:#79c0ff;border:1px solid #388bfd}
+/* APP */
+#app{display:none;flex-direction:column;flex:1;overflow:hidden}
+.atop{padding:.75rem 1.5rem;background:var(--s1);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;flex-shrink:0}
+.atop .tgt{font-family:var(--mo);font-size:.8rem;color:var(--mu)}.atop .tgt strong{color:var(--ac)}
+.pw{flex:1;min-width:180px}
+.pt{height:6px;background:var(--s2);border-radius:3px;overflow:hidden}
+.pf{height:100%;background:var(--ac2);border-radius:3px;transition:width .3s;width:0}
+.pl{font-size:.72rem;color:var(--mu);font-family:var(--mo);margin-top:.3rem}
+.abody{display:flex;flex:1;overflow:hidden}
+/* LOG */
+.logp{width:270px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden}
+.logp h3{font-size:.7rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;padding:.6rem 1rem;border-bottom:1px solid var(--bd);flex-shrink:0}
+.logs{flex:1;overflow-y:auto;padding:.35rem}
+.le{font-family:var(--mo);font-size:.67rem;padding:.17rem .35rem;border-radius:3px;display:flex;gap:.4rem;align-items:baseline}
+.le.ok{color:var(--ac2)}.le.sk{color:var(--mu)}.le.er{color:var(--ac3)}.le.nv{color:var(--ac)}
+.ln{color:var(--mu);min-width:26px;text-align:right;flex-shrink:0}
+.lt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* RESULTS */
+.resp{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.tabs{display:flex;border-bottom:1px solid var(--bd);background:var(--s1);flex-shrink:0;overflow-x:auto}
+.tab{padding:.55rem 1rem;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--mu);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--tx)}.tab.active{color:var(--ac);border-bottom-color:var(--ac)}
+.pc{flex:1;overflow-y:auto;padding:1.25rem 1.5rem}
 .pane{display:none}.pane.active{display:block}
-.tree-actions{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
-#q{flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:.8rem;padding:.4rem .75rem;outline:none}
-#q:focus{border-color:var(--accent)}
-.stats{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem}
-.stat{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.5rem .9rem;min-width:100px;text-align:center}
-.stat-v{font-size:1.4rem;font-weight:800;color:var(--accent);font-family:var(--mono)}
-.stat-l{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-.tree{font-family:var(--mono);font-size:.79rem}
-.tnode{margin-left:var(--in,0px)}
-.nrow{display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem;border-radius:6px;border-left:2px solid transparent;cursor:default}
-.has-ch .nrow{cursor:pointer}
-.has-ch .nrow:hover{background:var(--surface2);border-left-color:var(--accent)}
-.tog{width:12px;text-align:center;font-size:.7rem;color:var(--muted);transition:transform .2s;flex-shrink:0}
-.tog.leaf{color:var(--border)}
-.has-ch.open>.nrow .tog{transform:rotate(90deg)}
-.nbadge{font-size:.6rem;font-weight:700;padding:.1rem .35rem;border-radius:3px;flex-shrink:0;font-family:var(--font)}
-.nbadge.nav{background:#1f6feb;color:#79c0ff}.nbadge.page{background:#1a3a2a;color:#56d364}
-.nlink{color:var(--text);text-decoration:none;font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
-.nlink:hover{color:var(--accent)}
-.nurl{color:var(--muted);font-size:.7rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.view-btn{flex-shrink:0;padding:.1rem .5rem;font-size:.63rem;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:var(--font);transition:all .12s}
-.view-btn:hover{background:var(--accent);border-color:var(--accent);color:#000}
-.nchildren{overflow:hidden}
-.has-ch:not(.open)>.nchildren{display:none}
-.legend{display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
-.li{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--muted)}
-.dot{width:8px;height:8px;border-radius:50%}.dot.nav{background:#79c0ff}.dot.pg{background:#56d364}
-
-/* MODAL */
-#content-modal{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto}
-#content-modal.open{display:flex}
-.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:100%;max-width:920px;min-height:200px;display:flex;flex-direction:column;margin:auto}
-.modal-head{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:1rem}
-.modal-head-text{flex:1;overflow:hidden}
-.modal-title{font-size:1rem;font-weight:700;margin-bottom:.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.modal-url{font-family:var(--mono);font-size:.72rem;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
-.modal-close{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:.2rem .4rem;flex-shrink:0}
-.modal-close:hover{color:var(--text)}
-.modal-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface2);border-radius:0}
-.modal-tab{padding:.5rem .9rem;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;user-select:none}
-.modal-tab:hover{color:var(--text)}.modal-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.modal-body{padding:1.25rem;max-height:70vh;overflow-y:auto}
-.modal-pane{display:none}.modal-pane.active{display:block}
-.content-preview{font-family:var(--font);line-height:1.75;color:var(--text);font-size:.9rem}
-.content-preview h1,.content-preview h2,.content-preview h3,.content-preview h4{font-weight:700;margin:1.2rem 0 .5rem;color:var(--accent)}
-.content-preview h1{font-size:1.3rem}.content-preview h2{font-size:1.1rem}.content-preview h3{font-size:1rem}
-.content-preview p{margin-bottom:.75rem}
-.content-preview ul,.content-preview ol{margin:.5rem 0 .75rem 1.5rem}
-.content-preview li{margin-bottom:.3rem}
-.content-preview a{color:var(--accent)}
-.content-preview img{max-width:100%;border-radius:6px;margin:.5rem 0;border:1px solid var(--border)}
-.content-preview table{width:100%;border-collapse:collapse;font-size:.85rem;margin:.75rem 0}
-.content-preview th,.content-preview td{border:1px solid var(--border);padding:.4rem .6rem;text-align:left}
-.content-preview th{background:var(--surface2)}
-.content-preview blockquote{border-left:3px solid var(--accent);padding:.5rem 1rem;color:var(--muted);margin:.75rem 0}
-.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.75rem;margin-top:.5rem}
-.img-item{background:var(--surface2);border:1px solid var(--border);border-radius:6px;overflow:hidden}
-.img-item img{width:100%;height:110px;object-fit:cover;display:block}
-.img-item-url{font-family:var(--mono);font-size:.62rem;color:var(--muted);padding:.3rem .4rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.meta-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.78rem}
-.meta-table td{padding:.45rem .6rem;border-bottom:1px solid var(--border);vertical-align:top}
-.meta-table td:first-child{color:var(--muted);width:140px}
-.meta-table td:last-child{color:var(--text);word-break:break-all}
-.copy-btn{padding:.3rem .75rem;font-size:.72rem;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;font-family:var(--font);margin-bottom:1rem}
-.copy-btn:hover{background:var(--accent2);border-color:var(--accent2);color:#000}
-pre.html-out{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:1rem;overflow:auto;font-family:var(--mono);font-size:.7rem;color:var(--accent2);max-height:400px;white-space:pre-wrap;word-break:break-all}
-
-/* REDIR TABLE */
-.tbl-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:1rem;flex-wrap:wrap}
-.tbl-head h2{font-size:.95rem;font-weight:700}
-.export-row{display:flex;gap:.5rem;flex-wrap:wrap}
-table.redir{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.75rem}
-table.redir thead th{background:var(--surface2);border:1px solid var(--border);padding:.5rem .75rem;text-align:left;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:var(--font);font-size:.68rem;position:sticky;top:0}
-table.redir tbody tr{border-bottom:1px solid var(--border)}
-table.redir tbody tr:hover{background:var(--surface2)}
-table.redir tbody td{padding:.4rem .75rem;vertical-align:middle}
-.old-u code{color:var(--accent3)}
-td input[type=text]{background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:.72rem;padding:.25rem .5rem;width:100%;outline:none}
-td input:focus{border-color:var(--accent2)}
-td select{background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--accent);font-family:var(--mono);font-size:.72rem;padding:.25rem .5rem;outline:none}
-.note{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:.75rem 1rem;font-size:.8rem;color:var(--muted);margin-bottom:1rem}
-.note strong{color:var(--text)}
-
-/* ── AI TAB ── */
-.ai-setup-bar{display:flex;gap:1.5rem;align-items:flex-end;margin-bottom:1.25rem;flex-wrap:wrap;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1.25rem}
-.ai-key-group{flex:1;min-width:260px}
-.ai-key-group label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem;font-family:var(--mono)}
-.ai-stats-row{display:flex;gap:1rem;flex-shrink:0}
-.ai-stat{text-align:center;min-width:80px}
-.ai-stat span{display:block;font-size:1.4rem;font-weight:800;color:var(--accent);font-family:var(--mono)}
-.ai-stat small{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.ai-empty{text-align:center;padding:3rem;color:var(--muted);font-family:var(--mono);font-size:.85rem}
-.ai-page-grid{display:flex;flex-direction:column;gap:.5rem}
-.ai-page-row{display:flex;align-items:center;gap:.75rem;padding:.6rem .9rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;transition:border-color .15s}
-.ai-page-row:hover{border-color:var(--accent)}
-.ai-page-row.approved{border-color:var(--accent2);background:#1a3a2a22}
-.ai-page-row.generating{border-color:var(--warn);background:#2a1a0022}
-.ai-page-info{flex:1;overflow:hidden}
-.ai-page-title{font-size:.85rem;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ai-page-url{font-size:.7rem;color:var(--muted);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ai-status{font-size:.7rem;font-family:var(--mono);padding:.2rem .5rem;border-radius:4px;flex-shrink:0;min-width:80px;text-align:center}
-.ai-status.pending{background:var(--surface2);color:var(--muted)}
-.ai-status.generating{background:#2a1a00;color:var(--warn)}
-.ai-status.approved{background:#1a3a2a;color:var(--accent2)}
-.ai-status.error{background:#3a1a1a;color:var(--accent3)}
-.ai-row-btns{display:flex;gap:.4rem;flex-shrink:0}
-/* AI Modal */
-#ai-modal{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.8);align-items:flex-start;justify-content:center;padding:1.5rem;overflow-y:auto}
-#ai-modal.open{display:flex}
-.ai-modal-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:100%;max-width:1100px;display:flex;flex-direction:column;margin:auto;height:90vh}
-.ai-modal-head{padding:.9rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
-.ai-modal-title{font-size:.95rem;font-weight:700}
-.ai-modal-url{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
-.ai-modal-actions{display:flex;gap:.5rem;align-items:center;margin-left:auto;flex-wrap:wrap}
-.ai-modal-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface2)}
-.ai-mtab{padding:.5rem 1rem;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s}
-.ai-mtab:hover{color:var(--text)}.ai-mtab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.ai-modal-body{flex:1;overflow:hidden;display:flex;flex-direction:column}
-#ai-preview-frame{flex:1;border:none;background:white;width:100%}
-#ai-code-view{flex:1;overflow:auto;padding:1rem;font-family:var(--mono);font-size:.72rem;color:var(--accent2);background:var(--surface2);white-space:pre-wrap;word-break:break-all;margin:0}
-
-footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-family:var(--mono);border-top:1px solid var(--border);margin-top:auto}
+/* TREE */
+.tacts{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+#qs{flex:1;min-width:160px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-family:var(--mo);font-size:.78rem;padding:.38rem .7rem;outline:none}
+#qs:focus{border-color:var(--ac)}
+.stats{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.1rem}
+.st{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:.45rem .85rem;min-width:95px;text-align:center}
+.stv{font-size:1.3rem;font-weight:800;color:var(--ac);font-family:var(--mo)}
+.stl{font-size:.62rem;color:var(--mu);text-transform:uppercase;letter-spacing:.07em}
+.tree{font-family:var(--mo);font-size:.78rem}
+.tn{margin-left:var(--in,0px)}
+.nr{display:flex;align-items:center;gap:.45rem;padding:.28rem .45rem;border-radius:5px;border-left:2px solid transparent;cursor:default}
+.hc .nr{cursor:pointer}.hc .nr:hover{background:var(--s2);border-left-color:var(--ac)}
+.tog{width:11px;text-align:center;font-size:.68rem;color:var(--mu);transition:transform .2s;flex-shrink:0}
+.tog.lf{color:var(--bd)}.hc.op>.nr .tog{transform:rotate(90deg)}
+.nb{font-size:.58rem;font-weight:700;padding:.1rem .32rem;border-radius:3px;flex-shrink:0}
+.nb.nv{background:#1f6feb;color:#79c0ff}.nb.pg{background:#1a3a2a;color:#56d364}
+.nl{color:var(--tx);text-decoration:none;font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
+.nl:hover{color:var(--ac)}
+.nu{color:var(--mu);font-size:.68rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.vb{flex-shrink:0;padding:.08rem .42rem;font-size:.6rem;border-radius:3px;border:1px solid var(--bd);background:transparent;color:var(--mu);cursor:pointer;font-family:var(--fn);transition:all .1s}
+.vb:hover{background:var(--ac);border-color:var(--ac);color:#000}
+.nc{overflow:hidden}.hc:not(.op)>.nc{display:none}
+.legend{display:flex;gap:.9rem;margin-bottom:.9rem;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:.35rem;font-size:.76rem;color:var(--mu)}
+.dot{width:7px;height:7px;border-radius:50%}.dot.nv{background:#79c0ff}.dot.pg{background:#56d364}
+/* REDIRECT */
+.th{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:.75rem;flex-wrap:wrap}
+.th h2{font-size:.92rem;font-weight:700}
+.er2{display:flex;gap:.45rem;flex-wrap:wrap}
+table.rt{width:100%;border-collapse:collapse;font-family:var(--mo);font-size:.73rem}
+table.rt thead th{background:var(--s2);border:1px solid var(--bd);padding:.45rem .7rem;text-align:left;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;font-size:.65rem;position:sticky;top:0}
+table.rt tbody tr{border-bottom:1px solid var(--bd)}
+table.rt tbody tr:hover{background:var(--s2)}
+table.rt tbody td{padding:.38rem .7rem;vertical-align:middle}
+.ou code{color:var(--ac3)}
+td input[type=text]{background:var(--s2);border:1px solid var(--bd);border-radius:3px;color:var(--tx);font-family:var(--mo);font-size:.7rem;padding:.22rem .45rem;width:100%;outline:none}
+td input:focus{border-color:var(--ac2)}
+td select{background:var(--s2);border:1px solid var(--bd);border-radius:3px;color:var(--ac);font-family:var(--mo);font-size:.7rem;padding:.22rem .45rem;outline:none}
+.note{background:var(--s2);border:1px solid var(--bd);border-left:3px solid var(--ac);border-radius:6px;padding:.7rem .95rem;font-size:.78rem;color:var(--mu);margin-bottom:1rem}
+.note strong{color:var(--tx)}
+/* EXPORT */
+.exp-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem}
+.exp-card{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:1.1rem}
+.exp-card h3{font-size:.82rem;font-weight:700;margin-bottom:.85rem}
+.exp-file{font-family:var(--mo);font-size:.78rem;color:var(--mu);line-height:2}
+.exp-file strong{color:var(--tx)}
+/* AI TAB */
+.ai-bar{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:1.1rem;margin-bottom:1.1rem;display:flex;gap:1.5rem;align-items:flex-end;flex-wrap:wrap}
+.ai-key{flex:1;min-width:240px}
+.ai-stats{display:flex;gap:.85rem;flex-shrink:0}
+.ai-stt{text-align:center;min-width:70px}
+.ai-stt span{display:block;font-size:1.3rem;font-weight:800;color:var(--ac);font-family:var(--mo)}
+.ai-stt small{font-size:.62rem;color:var(--mu);text-transform:uppercase;letter-spacing:.06em}
+.ai-rows{display:flex;flex-direction:column;gap:.45rem}
+.ai-row{display:flex;align-items:center;gap:.65rem;padding:.55rem .85rem;background:var(--s1);border:1px solid var(--bd);border-radius:8px;transition:border-color .15s}
+.ai-row:hover{border-color:var(--ac)}
+.ai-row.appr{border-color:var(--ac2);background:#1a3a2a18}
+.ai-row.genr{border-color:var(--warn)}
+.ai-info{flex:1;overflow:hidden}
+.ai-ttl{font-size:.82rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ai-url{font-size:.67rem;color:var(--mu);font-family:var(--mo);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ai-badge{font-size:.67rem;font-family:var(--mo);padding:.18rem .45rem;border-radius:4px;flex-shrink:0;min-width:78px;text-align:center}
+.ai-badge.pending{background:var(--s2);color:var(--mu)}
+.ai-badge.generating{background:#2a1800;color:var(--warn)}
+.ai-badge.done{background:#1a2a3a;color:var(--ac)}
+.ai-badge.approved{background:#1a3a2a;color:var(--ac2)}
+.ai-badge.error{background:#3a1a1a;color:var(--ac3)}
+.ai-btns{display:flex;gap:.35rem;flex-shrink:0}
+.ai-empty{text-align:center;padding:3rem;color:var(--mu);font-family:var(--mo);font-size:.82rem}
+/* CONTENT MODAL */
+#cm{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);align-items:flex-start;justify-content:center;padding:1.75rem;overflow-y:auto}
+#cm.open{display:flex}
+.cmb{background:var(--s1);border:1px solid var(--bd);border-radius:12px;width:100%;max-width:900px;display:flex;flex-direction:column;margin:auto;max-height:88vh}
+.cmh{padding:.9rem 1.1rem;border-bottom:1px solid var(--bd);display:flex;align-items:flex-start;gap:.85rem}
+.cmht{flex:1;overflow:hidden}
+.cmtit{font-size:.92rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmurl{font-family:var(--mo);font-size:.7rem;color:var(--ac);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.cmc{background:none;border:none;color:var(--mu);font-size:1.1rem;cursor:pointer;padding:.2rem .38rem;flex-shrink:0}.cmc:hover{color:var(--tx)}
+.cmtabs{display:flex;border-bottom:1px solid var(--bd);background:var(--s2)}
+.cmt{padding:.48rem .85rem;cursor:pointer;font-size:.76rem;font-weight:600;color:var(--mu);border-bottom:2px solid transparent;transition:all .15s}
+.cmt:hover{color:var(--tx)}.cmt.active{color:var(--ac);border-bottom-color:var(--ac)}
+.cmb2{flex:1;overflow-y:auto;padding:1.1rem}
+.cmpn{display:none}.cmpn.active{display:block}
+.cprev{font-size:.9rem;line-height:1.75;color:var(--tx)}
+.cprev h1,.cprev h2,.cprev h3{font-weight:700;margin:1rem 0 .5rem;color:var(--ac)}
+.cprev p{margin-bottom:.75rem}.cprev ul,.cprev ol{margin:.5rem 0 .75rem 1.5rem}
+.cprev a{color:var(--ac)}.cprev img{max-width:100%;border-radius:6px;margin:.5rem 0}
+.ig{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.65rem;margin-top:.5rem}
+.ii{background:var(--s2);border:1px solid var(--bd);border-radius:6px;overflow:hidden}
+.ii img{width:100%;height:90px;object-fit:cover;display:block}
+.iu{font-family:var(--mo);font-size:.6rem;color:var(--mu);padding:.28rem .38rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mt{width:100%;border-collapse:collapse;font-family:var(--mo);font-size:.76rem}
+.mt td{padding:.42rem .6rem;border-bottom:1px solid var(--bd);vertical-align:top}
+.mt td:first-child{color:var(--mu);width:130px}
+.cpb{padding:.28rem .65rem;font-size:.7rem;border-radius:4px;border:1px solid var(--bd);background:var(--s2);color:var(--mu);cursor:pointer;margin-bottom:.75rem;font-family:var(--fn)}
+.cpb:hover{background:var(--ac2);border-color:var(--ac2);color:#000}
+/* AI PREVIEW MODAL */
+#am{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.82);align-items:flex-start;justify-content:center;padding:1.25rem;overflow-y:auto}
+#am.open{display:flex}
+.amb{background:var(--s1);border:1px solid var(--bd);border-radius:12px;width:100%;max-width:1100px;display:flex;flex-direction:column;margin:auto;height:92vh}
+.amh{padding:.8rem 1.1rem;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;flex-shrink:0}
+.amtit{font-size:.9rem;font-weight:700}
+.amurl{font-family:var(--mo);font-size:.7rem;color:var(--mu)}
+.ama{display:flex;gap:.4rem;align-items:center;margin-left:auto;flex-wrap:wrap}
+.amtabs{display:flex;border-bottom:1px solid var(--bd);background:var(--s2);flex-shrink:0}
+.amt{padding:.45rem .85rem;cursor:pointer;font-size:.75rem;font-weight:600;color:var(--mu);border-bottom:2px solid transparent;transition:all .15s}
+.amt:hover{color:var(--tx)}.amt.active{color:var(--ac);border-bottom-color:var(--ac)}
+.ambd{flex:1;overflow:hidden;display:flex;flex-direction:column}
+#apf{flex:1;border:none;background:white;width:100%}
+#acv{flex:1;overflow:auto;padding:1rem;font-family:var(--mo);font-size:.7rem;color:var(--ac2);background:var(--s2);white-space:pre-wrap;word-break:break-all;margin:0;display:none}
+footer{text-align:center;padding:.85rem;color:var(--mu);font-size:.7rem;font-family:var(--mo);border-top:1px solid var(--bd);flex-shrink:0}
 </style>
 </head>
 <body>
@@ -185,358 +178,301 @@ footer{text-align:center;padding:1rem;color:var(--muted);font-size:.72rem;font-f
 <header>
   <div class="logo">Site<span>Crawler</span></div>
   <div class="tag">Drupal Migration Tool</div>
-  <div class="tag" style="background:#1a3a2a;border-color:#2ea04355;color:#56d364;margin-left:auto">v3.0</div>
-  <div class="tag" style="background:#1a3a2a;border-color:#2ea04355;color:#56d364;margin-left:auto"></div>
+  <div class="vtag">v3.1</div>
 </header>
 
+<!-- SETUP -->
 <div class="setup" id="setup">
   <div class="card">
-    <h2><span class="step-badge">1</span> Cloudflare Worker URL</h2>
-    <p style="font-size:.82rem;color:var(--muted);margin-bottom:1rem">Deploy <code style="color:var(--accent)">worker.js</code> to your free Cloudflare Workers account, then paste the URL here.</p>
+    <h2><span class="sbadge">1</span>Cloudflare Worker URL</h2>
+    <p style="font-size:.8rem;color:var(--mu);margin-bottom:.9rem">Deploy <code style="color:var(--ac)">worker.js</code> to Cloudflare Workers (free). It handles both page scraping and the Anthropic AI proxy.</p>
     <div class="field">
       <label>Worker URL</label>
-      <input type="url" id="worker-url" value="https://worker.hanig.workers.dev" placeholder="https://my-scraper.yourname.workers.dev" />
-      <p class="input-note">No account? <a href="https://workers.cloudflare.com" target="_blank">Sign up free at workers.cloudflare.com</a></p>
+      <input type="url" id="worker-url" value="https://worker.hanig.workers.dev" />
     </div>
     <div style="display:flex;gap:.75rem;align-items:center;margin-top:.75rem">
       <button class="btn sm" onclick="testWorker()">Test Connection</button>
-      <div id="worker-status"></div>
+      <div id="wstatus"></div>
     </div>
   </div>
   <div class="card">
-    <h2><span class="step-badge">2</span> Target Site</h2>
+    <h2><span class="sbadge">2</span>Target Site</h2>
     <div class="row">
       <div class="field">
         <label>Site URL to crawl</label>
         <input type="url" id="site-url" value="https://www.pregnancyparenting.org.au" />
       </div>
-      <div class="field" style="max-width:130px">
+      <div class="field" style="max-width:120px">
         <label>Max pages</label>
         <input type="text" id="max-pages" value="300" />
       </div>
     </div>
   </div>
   <div style="display:flex;justify-content:flex-end">
-    <button class="btn primary" onclick="startCrawl()">Start Crawling →</button>
+    <button class="btn pri" onclick="startCrawl()">Start Crawling →</button>
   </div>
 </div>
 
+<!-- APP -->
 <div id="app">
-  <div class="app-top">
-    <div class="target">Crawling: <strong id="crawl-target"></strong></div>
-    <div class="progress-wrap">
-      <div class="progress-bar-track"><div class="progress-bar-fill" id="prog-fill"></div></div>
-      <div class="progress-label" id="prog-label">Starting…</div>
+  <div class="atop">
+    <div class="tgt">Crawling: <strong id="ctgt"></strong></div>
+    <div class="pw">
+      <div class="pt"><div class="pf" id="pf"></div></div>
+      <div class="pl" id="pl">Starting…</div>
     </div>
-    <button class="btn sm danger" id="stop-btn" onclick="stopCrawl()">Stop</button>
-    <button class="btn sm" id="restart-btn" onclick="location.reload()" style="display:none">↩ New Crawl</button>
+    <button class="btn sm red" id="stopb" onclick="stopCrawl()">Stop</button>
+    <button class="btn sm" id="rstb" onclick="location.reload()" style="display:none">↩ New Crawl</button>
   </div>
-  <div class="app-body">
-    <div class="log-panel">
+  <div class="abody">
+    <div class="logp">
       <h3>Crawl Log</h3>
-      <div class="log-scroll" id="log"></div>
+      <div class="logs" id="log"></div>
     </div>
-    <div class="results-panel">
+    <div class="resp">
       <div class="tabs">
         <div class="tab active" onclick="showTab('tree',this)">🌳 Page Tree</div>
         <div class="tab" onclick="showTab('redir',this)">🔀 Redirect Map</div>
-        <div class="tab" onclick="showTab('export',this)">📦 Export Static Site</div>
+        <div class="tab" onclick="showTab('export',this)">📦 Export Site</div>
         <div class="tab" onclick="showTab('ai',this)">🤖 AI Regenerate</div>
         <div class="tab" onclick="showTab('json',this)">📋 JSON</div>
       </div>
-      <div class="panel-content">
+      <div class="pc">
+
+        <!-- TREE -->
         <div class="pane active" id="pane-tree">
-          <div class="stats" id="stats-bar"></div>
+          <div class="stats" id="statbar"></div>
           <div class="legend">
-            <div class="li"><div class="dot nav"></div>Navigation page</div>
+            <div class="li"><div class="dot nv"></div>Navigation page</div>
             <div class="li"><div class="dot pg"></div>Content / sub-page</div>
           </div>
-          <div class="tree-actions">
+          <div class="tacts">
             <button class="btn sm" onclick="expandAll()">Expand all</button>
             <button class="btn sm" onclick="collapseAll()">Collapse all</button>
-            <input id="q" type="text" placeholder="Filter…" oninput="filterTree(this.value)" />
+            <input id="qs" type="text" placeholder="Filter…" oninput="filterTree(this.value)" />
           </div>
-          <div class="tree" id="tree-root"><div style="text-align:center;padding:2rem;color:var(--muted);font-family:var(--mono)">Crawl in progress…</div></div>
+          <div class="tree" id="treeroot"><div style="text-align:center;padding:2rem;color:var(--mu);font-family:var(--mo)">Crawl in progress…</div></div>
         </div>
+
+        <!-- REDIRECT -->
         <div class="pane" id="pane-redir">
-          <div class="note"><strong>How to use:</strong> Fill in the "New Path" column with your rebuilt HTML site paths, then export.</div>
-          <div class="tbl-head">
-            <h2 id="redir-count">Redirect Map</h2>
-            <div class="export-row">
+          <div class="note"><strong>Fill in New Path</strong> for each URL, then export for your server config.</div>
+          <div class="th">
+            <h2 id="rcount">Redirect Map</h2>
+            <div class="er2">
               <button class="btn sm" onclick="exportCSV()">⬇ CSV</button>
               <button class="btn sm" onclick="exportApache()">⬇ Apache .htaccess</button>
-              <button class="btn sm" onclick="exportNginx()">⬇ Nginx config</button>
+              <button class="btn sm" onclick="exportNginx()">⬇ Nginx</button>
             </div>
           </div>
-          <table class="redir" id="redir-table">
+          <table class="rt" id="rtable">
             <thead><tr><th>Old URL</th><th>Old Path</th><th>New Path</th><th>Type</th></tr></thead>
-            <tbody id="redir-body"></tbody>
+            <tbody id="rbody"></tbody>
           </table>
         </div>
+
+        <!-- EXPORT -->
         <div class="pane" id="pane-export">
-          <div class="note"><strong>How it works:</strong> Generates a full ZIP file — one <code style="color:var(--accent)">.html</code> file per crawled page, a shared <code style="color:var(--accent)">style.css</code>, and an <code style="color:var(--accent)">.htaccess</code> with your 301 redirects. Upload the ZIP to your Cloudways server and extract it into the site root.</div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
-            <div class="card" style="margin:0">
-              <h2 style="font-size:.85rem;margin-bottom:.75rem">🎨 Site Template Options</h2>
-              <div class="field">
-                <label>Site name (used in &lt;title&gt; tags)</label>
-                <input type="text" id="exp-sitename" value="Pregnancy to Parenting Australia" />
-              </div>
-              <div class="field">
-                <label>Primary colour (hex)</label>
-                <input type="text" id="exp-color" value="#2c7a6e" />
-              </div>
-              <div class="field" style="margin:0">
-                <label>Navigation style</label>
-                <select id="exp-navstyle" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:.85rem;padding:.6rem .9rem;outline:none">
-                  <option value="topbar">Top navigation bar</option>
-                  <option value="sidebar">Left sidebar</option>
-                </select>
+          <div class="note"><strong>Generates a ZIP</strong> — one HTML file per page, shared CSS, and .htaccess 301 redirects. Upload to Cloudways and extract in public_html.</div>
+          <div class="exp-grid">
+            <div class="exp-card">
+              <h3>🎨 Template Options</h3>
+              <div class="field"><label>Site name</label><input type="text" id="exp-sitename" value="Pregnancy to Parenting Australia" /></div>
+              <div class="field"><label>Nav style</label>
+                <select id="exp-navstyle"><option value="topbar">Top navigation bar</option><option value="sidebar">Left sidebar</option></select>
               </div>
             </div>
-            <div class="card" style="margin:0">
-              <h2 style="font-size:.85rem;margin-bottom:.75rem">📁 What gets generated</h2>
-              <div style="font-size:.8rem;color:var(--muted);font-family:var(--mono);line-height:1.9">
-                <div>📄 <strong style="color:var(--text)">index.html</strong> — homepage</div>
-                <div>📁 <strong style="color:var(--text)">about/index.html</strong> — sub-pages</div>
-                <div>📁 <strong style="color:var(--text)">blog/index.html</strong></div>
-                <div>🎨 <strong style="color:var(--text)">assets/style.css</strong></div>
-                <div>⚙️ <strong style="color:var(--text)">.htaccess</strong> — 301 redirects</div>
-                <div>📋 <strong style="color:var(--text)">migration-map.html</strong> — reference</div>
+            <div class="exp-card">
+              <h3>📁 ZIP contents</h3>
+              <div class="exp-file">
+                <div>📄 <strong>index.html</strong> — homepage</div>
+                <div>📁 <strong>about/index.html</strong> — sub-pages</div>
+                <div>🎨 <strong>assets/style.css</strong></div>
+                <div>⚙️ <strong>.htaccess</strong> — 301 redirects</div>
               </div>
             </div>
           </div>
-
           <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
-            <button class="btn primary" onclick="exportStaticSite()" id="export-btn" style="font-size:1rem;padding:.75rem 2rem">📦 Download Static Site ZIP</button>
-            <div id="export-progress" style="font-family:var(--mono);font-size:.8rem;color:var(--muted)"></div>
-          </div>
-
-          <div style="margin-top:1.5rem;padding:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px">
-            <p style="font-size:.82rem;font-weight:700;margin-bottom:.5rem">🚀 Cloudways deployment steps</p>
-            <ol style="font-size:.8rem;color:var(--muted);line-height:2;padding-left:1.25rem">
-              <li>Create a new <strong style="color:var(--text)">PHP application</strong> on Cloudways (or use a blank HTML app)</li>
-              <li>Download the ZIP from this button</li>
-              <li>Upload ZIP via <strong style="color:var(--text)">SFTP</strong> or Cloudways File Manager into <code style="color:var(--accent)">public_html/</code></li>
-              <li>Extract the ZIP — your site structure will be in place</li>
-              <li>The <code style="color:var(--accent)">.htaccess</code> handles all 301 redirects automatically</li>
-              <li>Review each page and replace placeholder content with your real content</li>
-            </ol>
+            <button class="btn pri" onclick="exportStaticSite()" id="expbtn" style="font-size:.95rem;padding:.65rem 1.75rem">📦 Download ZIP</button>
+            <div id="expprog" style="font-family:var(--mo);font-size:.78rem;color:var(--mu)"></div>
           </div>
         </div>
 
+        <!-- AI -->
         <div class="pane" id="pane-ai">
-          <div class="ai-setup-bar">
-            <div class="ai-key-group">
+          <div class="ai-bar">
+            <div class="ai-key field" style="margin:0">
               <label>Anthropic API Key</label>
-              <input type="password" id="ai-key" placeholder="sk-ant-..." autocomplete="off" />
-              <p class="input-note">Key stays in your browser — sent only to your Cloudflare Worker, which forwards it to Anthropic.</p>
+              <input type="password" id="aikey" placeholder="sk-ant-…" autocomplete="off" />
+              <p class="inote">Sent only to your Worker → Anthropic. Never stored.</p>
             </div>
-            <div class="ai-stats-row">
-              <div class="ai-stat"><span id="ai-done-count">0</span><small>Generated</small></div>
-              <div class="ai-stat"><span id="ai-total-count">0</span><small>Total pages</small></div>
-              <div class="ai-stat"><span id="ai-cost-est">$0.00</span><small>Est. cost</small></div>
-            </div>
-          </div>
-          <div class="note"><strong>How it works:</strong> Click <em>Generate</em> on any page. Claude rewrites the content as clean HTML using the MA brand design. Preview it in the browser before accepting. Only approved pages go into the ZIP export.</div>
-          <div id="ai-page-list"><div class="ai-empty">Run a crawl first, then come back here.</div></div>
-        </div>
-
-        <!-- AI Preview Modal -->
-        <div id="ai-modal" onclick="closeAIModal(event)">
-          <div class="ai-modal-box">
-            <div class="ai-modal-head">
-              <div>
-                <div class="ai-modal-title" id="ai-modal-title"></div>
-                <div class="ai-modal-url" id="ai-modal-url"></div>
-              </div>
-              <div class="ai-modal-actions">
-                <button class="btn sm" onclick="regenerateCurrent()">↺ Regenerate</button>
-                <button class="btn sm" style="background:#3fb950;border-color:#3fb950;color:#000" onclick="approveCurrent()">✓ Approve & Use</button>
-                <button class="modal-close" onclick="closeAIModal()">✕</button>
-              </div>
-            </div>
-            <div class="ai-modal-tabs">
-              <div class="ai-mtab active" onclick="switchAIView('preview',this)">Preview</div>
-              <div class="ai-mtab" onclick="switchAIView('code',this)">HTML Code</div>
-            </div>
-            <div class="ai-modal-body">
-              <iframe id="ai-preview-frame" sandbox="allow-same-origin allow-scripts"></iframe>
-              <pre id="ai-code-view" style="display:none"></pre>
+            <div class="ai-stats">
+              <div class="ai-stt"><span id="ai-done">0</span><small>Approved</small></div>
+              <div class="ai-stt"><span id="ai-total">0</span><small>Pages</small></div>
+              <div class="ai-stt"><span id="ai-cost">$0.00</span><small>Est. cost</small></div>
             </div>
           </div>
+          <div class="note"><strong>Page-by-page:</strong> Click Generate on any page. Preview the result in the browser. Approve it to include in the ZIP export. Unapproved pages fall back to raw scraped content.</div>
+          <div id="ailist"><div class="ai-empty">Run a crawl first, then come back here.</div></div>
         </div>
 
+        <!-- JSON -->
         <div class="pane" id="pane-json">
           <div style="display:flex;justify-content:flex-end;margin-bottom:.75rem">
-            <button class="btn sm" onclick="downloadJSON()">⬇ Download JSON</button>
+            <button class="btn sm" onclick="dlJSON()">⬇ Download JSON</button>
           </div>
-          <pre id="json-out" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:1rem;overflow:auto;font-family:var(--mono);font-size:.72rem;color:var(--accent2);max-height:calc(100vh - 260px)"></pre>
+          <pre id="jsonout" style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:1rem;overflow:auto;font-family:var(--mo);font-size:.7rem;color:var(--ac2);max-height:calc(100vh - 240px)"></pre>
         </div>
+
       </div>
     </div>
   </div>
 </div>
 
-<!-- CONTENT MODAL -->
-<div id="content-modal" onclick="closeModalBg(event)">
-  <div class="modal-box">
-    <div class="modal-head">
-      <div class="modal-head-text">
-        <div class="modal-title" id="modal-title"></div>
-        <a class="modal-url" id="modal-url" target="_blank"></a>
+<!-- CONTENT VIEWER MODAL -->
+<div id="cm" onclick="closeCM(event)">
+  <div class="cmb">
+    <div class="cmh">
+      <div class="cmht">
+        <div class="cmtit" id="cmtit"></div>
+        <a class="cmurl" id="cmurl" target="_blank"></a>
       </div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <button class="cmc" onclick="closeCMd()">✕</button>
     </div>
-    <div class="modal-tabs">
-      <div class="modal-tab active" onclick="showModalTab('preview',this)">👁 Preview</div>
-      <div class="modal-tab" onclick="showModalTab('text',this)">📝 Clean Text</div>
-      <div class="modal-tab" onclick="showModalTab('images',this)">🖼 Images</div>
-      <div class="modal-tab" onclick="showModalTab('meta',this)">ℹ Meta</div>
-      <div class="modal-tab" onclick="showModalTab('html',this)">💾 Raw HTML</div>
+    <div class="cmtabs">
+      <div class="cmt active" onclick="showCMT('prev',this)">👁 Preview</div>
+      <div class="cmt" onclick="showCMT('txt',this)">📝 Text</div>
+      <div class="cmt" onclick="showCMT('imgs',this)">🖼 Images</div>
+      <div class="cmt" onclick="showCMT('meta',this)">ℹ Meta</div>
+      <div class="cmt" onclick="showCMT('html',this)">💾 HTML</div>
     </div>
-    <div class="modal-body">
-      <div class="modal-pane active" id="mpane-preview">
-        <div class="content-preview" id="modal-preview"></div>
-      </div>
-      <div class="modal-pane" id="mpane-text">
-        <button class="copy-btn" onclick="copyText()">Copy text</button>
-        <pre id="modal-text" style="font-family:var(--font);font-size:.88rem;color:var(--text);white-space:pre-wrap;line-height:1.75"></pre>
-      </div>
-      <div class="modal-pane" id="mpane-images">
-        <p id="img-count" style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem"></p>
-        <div class="img-grid" id="modal-images"></div>
-      </div>
-      <div class="modal-pane" id="mpane-meta">
-        <table class="meta-table" id="modal-meta"></table>
-      </div>
-      <div class="modal-pane" id="mpane-html">
-        <button class="copy-btn" onclick="copyHTML()">Copy HTML</button>
-        <pre class="html-out" id="modal-html"></pre>
-      </div>
+    <div class="cmb2">
+      <div class="cmpn active" id="cmpn-prev"><div class="cprev" id="cmprev"></div></div>
+      <div class="cmpn" id="cmpn-txt"><button class="cpb" onclick="cpTxt()">Copy</button><pre id="cmtxt" style="font-family:var(--fn);font-size:.88rem;white-space:pre-wrap;line-height:1.75"></pre></div>
+      <div class="cmpn" id="cmpn-imgs"><p id="cmimgc" style="font-size:.78rem;color:var(--mu);margin-bottom:.65rem"></p><div class="ig" id="cmimgs"></div></div>
+      <div class="cmpn" id="cmpn-meta"><table class="mt" id="cmmeta"></table></div>
+      <div class="cmpn" id="cmpn-html"><button class="cpb" onclick="cpHTML()">Copy HTML</button><pre id="cmhtml" style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:1rem;overflow:auto;font-family:var(--mo);font-size:.68rem;color:var(--ac2);max-height:400px;white-space:pre-wrap;word-break:break-all"></pre></div>
     </div>
   </div>
 </div>
 
-<footer>Site Migration Crawler · Cloudflare Worker + GitHub Pages · Free</footer>
+<!-- AI PREVIEW MODAL -->
+<div id="am" onclick="closeAM(event)">
+  <div class="amb">
+    <div class="amh">
+      <div>
+        <div class="amtit" id="amtit"></div>
+        <div class="amurl" id="amurl"></div>
+      </div>
+      <div class="ama">
+        <button class="btn sm" onclick="regenCur()">↺ Regenerate</button>
+        <button class="btn sm grn" onclick="approveCur()">✓ Approve</button>
+        <button class="cmc" onclick="closeAMd()">✕</button>
+      </div>
+    </div>
+    <div class="amtabs">
+      <div class="amt active" onclick="switchAV('prev',this)">Preview</div>
+      <div class="amt" onclick="switchAV('code',this)">HTML Code</div>
+    </div>
+    <div class="ambd">
+      <iframe id="apf" sandbox="allow-same-origin allow-scripts"></iframe>
+      <pre id="acv"></pre>
+    </div>
+  </div>
+</div>
 
+<footer>SiteCrawler · Drupal Migration Tool · v3.1</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
-let workerUrl='',baseUrl='',maxPages=300,stopped=false;
-const pages={},navUrls=new Set(),visited=new Set(),queue=[];
+// ── STATE
+let workerUrl='', baseUrl='', maxPages=300, stopped=false;
+const pages={}, navUrls=new Set(), visited=new Set(), queue=[];
+const aiResults={};
+let curAIUrl=null;
 
-const SKIP_EXT=/\.(pdf|jpg|jpeg|png|gif|svg|webp|mp4|mp3|zip|doc|docx|xls|xlsx|ppt|pptx|css|js|ico|woff|woff2|xml|json)(\?.*)?$/i;
-const SKIP_PAT=['#','mailto:','tel:','javascript:','/user/','/admin/','/node/add','?q=user','logout','feed','?sort=','?page='];
+const SKIPEXT=/\.(pdf|jpg|jpeg|png|gif|svg|webp|mp4|mp3|zip|doc|docx|xls|xlsx|ppt|pptx|css|js|ico|woff|woff2|xml|json)(\?.*)?$/i;
+const SKIPPAT=['#','mailto:','tel:','javascript:','/user/','/admin/','/node/add','?q=user','logout','feed','?sort=','?page='];
+const CONSELS=['main[role="main"]','main','#content','#main-content','.field--name-body','.field-items','article.node','[role="main"]','.main-container','.region-content','.layout-container'];
+const STRIPSELS=['nav','header','footer','.nav','.navigation','.menu','.sidebar','.breadcrumb','.pager','script','style','noscript','#toolbar-bar','[role="navigation"]','.contextual','.tabs--primary','.social-sharing','.submitted','#comments'];
 
-// Drupal content area selectors — tried in order, first match with text > 50 chars wins
-const CONTENT_SELS=['main[role="main"]','main','#content','#main-content','.field--name-body','.field-items','article.node','[role="main"]','.main-container','.region-content','.layout-container'];
-// Elements to strip from extracted content
-const STRIP_SELS=['nav','header','footer','.nav','.navigation','.menu','.sidebar','.breadcrumb','.pager','script','style','noscript','#toolbar-bar','[role="navigation"]','.contextual','.tabs--primary','.social-sharing','.addtoany','.submitted','#comments'];
-
+// ── UTILS
 function norm(url){try{const u=new URL(url);u.hash='';let p=u.pathname.replace(/\/+$/,'')||'/';return u.origin+p;}catch{return url;}}
 function sameDomain(url){try{return new URL(url).hostname===new URL(baseUrl).hostname;}catch{return false;}}
-function shouldSkip(url){if(SKIP_EXT.test(url))return true;return SKIP_PAT.some(p=>url.includes(p));}
+function shouldSkip(url){if(SKIPEXT.test(url))return true;return SKIPPAT.some(p=>url.includes(p));}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function urlToPath(url){try{let p=new URL(url).pathname.replace(/^\//,'').replace(/\/$/,'');return p?p+'/index.html':'index.html';}catch{return 'index.html';}}
 
+// ── WORKER TEST
 async function testWorker(){
   const wu=document.getElementById('worker-url').value.trim();
-  if(!wu){alert('Enter Worker URL first.');return;}
-  const el=document.getElementById('worker-status');
-  el.style.display='';el.className='status-testing';el.textContent='Testing…';
+  if(!wu){alert('Enter Worker URL.');return;}
+  const el=document.getElementById('wstatus');
+  el.style.display='';el.className='stst';el.textContent='Testing…';
   try{
-    const r=await fetch(`${wu}?url=https://httpbin.org/get`,{signal:AbortSignal.timeout(8000)});
-    el.className=r.ok?'status-ok':'status-err';
-    el.textContent=r.ok?'✓ Worker connected and working!':'✗ Worker returned '+r.status;
-  }catch(e){el.className='status-err';el.textContent='✗ '+e.message;}
+    const r=await fetch(wu+'?url=https://httpbin.org/get',{signal:AbortSignal.timeout(8000)});
+    el.className=r.ok?'sok':'serr';
+    el.textContent=r.ok?'✓ Connected!':'✗ Status '+r.status;
+  }catch(e){el.className='serr';el.textContent='✗ '+e.message;}
 }
 
+// ── FETCH VIA WORKER
 async function fetchPage(url){
-  const r=await fetch(`${workerUrl}?url=${encodeURIComponent(url)}`,{signal:AbortSignal.timeout(15000)});
+  const r=await fetch(workerUrl+'?url='+encodeURIComponent(url),{signal:AbortSignal.timeout(15000)});
   const finalUrl=norm(r.headers.get('X-Final-Url')||url);
   const ct=r.headers.get('Content-Type')||'';
   if(!ct.includes('text/html'))return{html:null,finalUrl};
   return{html:await r.text(),finalUrl};
 }
 
+// ── PARSE PAGE
 function parsePage(html,pageUrl){
   const doc=(new DOMParser()).parseFromString(html,'text/html');
-
-  // Nav links
   const navSels=['nav','header nav','.nav','.navigation','.menu','#navigation','#main-menu','#main-navigation','.main-menu','.primary-menu','[role="navigation"]','.navbar','.block-menu','.block-system-main-menu'];
   const navLinks=new Set();
   navSels.forEach(sel=>doc.querySelectorAll(sel+' a[href]').forEach(a=>{
     try{const abs=norm(new URL(a.getAttribute('href'),pageUrl).href);if(sameDomain(abs)&&!shouldSkip(abs))navLinks.add(abs);}catch{}
   }));
-
-  // All links
   const allLinks=new Set();
   doc.querySelectorAll('a[href]').forEach(a=>{
     try{const abs=norm(new URL(a.getAttribute('href'),pageUrl).href);if(sameDomain(abs)&&!shouldSkip(abs))allLinks.add(abs);}catch{}
   });
-
-  // Title
   let title='';
   for(const sel of['h1','.page-title','#page-title','.page-header h1','title']){
     const el=doc.querySelector(sel);if(el&&el.textContent.trim()){title=el.textContent.trim();break;}
   }
   if(!title)title=new URL(pageUrl).pathname||pageUrl;
-
-  // Meta
   const desc=(doc.querySelector('meta[name="description"]')?.getAttribute('content')||'');
   const keywords=(doc.querySelector('meta[name="keywords"]')?.getAttribute('content')||'');
-
-  // Main content extraction
   let contentEl=null;
-  for(const sel of CONTENT_SELS){
-    const el=doc.querySelector(sel);
-    if(el&&el.textContent.trim().length>50){contentEl=el.cloneNode(true);break;}
-  }
+  for(const sel of CONSELS){const el=doc.querySelector(sel);if(el&&el.textContent.trim().length>50){contentEl=el.cloneNode(true);break;}}
   if(!contentEl)contentEl=doc.body?doc.body.cloneNode(true):doc.createElement('div');
-
-  // Strip noise from content clone
-  STRIP_SELS.forEach(sel=>contentEl.querySelectorAll(sel).forEach(el=>el.remove()));
-
-  // Fix image src to absolute
-  contentEl.querySelectorAll('img[src]').forEach(img=>{
-    try{img.src=new URL(img.getAttribute('src'),pageUrl).href;}catch{}
-  });
-
-  // Fix links to absolute
-  contentEl.querySelectorAll('a[href]').forEach(a=>{
-    try{a.href=new URL(a.getAttribute('href'),pageUrl).href;}catch{}
-  });
-
+  STRIPSELS.forEach(sel=>contentEl.querySelectorAll(sel).forEach(el=>el.remove()));
+  contentEl.querySelectorAll('img[src]').forEach(img=>{try{img.src=new URL(img.getAttribute('src'),pageUrl).href;}catch{}});
+  contentEl.querySelectorAll('a[href]').forEach(a=>{try{a.href=new URL(a.getAttribute('href'),pageUrl).href;}catch{}});
   const contentHTML=contentEl.innerHTML;
   const cleanText=(contentEl.innerText||contentEl.textContent||'').replace(/\n{3,}/g,'\n\n').trim();
-
-  // All images from full doc
-  const images=[];
-  const seenSrc=new Set();
+  const images=[];const seenSrc=new Set();
   doc.querySelectorAll('img[src]').forEach(img=>{
-    try{
-      const src=new URL(img.getAttribute('src'),pageUrl).href;
-      const alt=img.getAttribute('alt')||'';
-      if(!src.startsWith('data:')&&!seenSrc.has(src)){seenSrc.add(src);images.push({src,alt});}
-    }catch{}
+    try{const src=new URL(img.getAttribute('src'),pageUrl).href;const alt=img.getAttribute('alt')||'';
+    if(!src.startsWith('data:')&&!seenSrc.has(src)){seenSrc.add(src);images.push({src,alt});}}catch{}
   });
-
-  // Headings
   const headings=[];
   doc.querySelectorAll('h1,h2,h3').forEach(h=>headings.push({level:h.tagName,text:h.textContent.trim()}));
-
   return{navLinks:[...navLinks],allLinks:[...allLinks],title:title.slice(0,120),desc,keywords,contentHTML,cleanText,images,headings};
 }
 
+// ── CRAWL
 async function startCrawl(){
   workerUrl=document.getElementById('worker-url').value.trim().replace(/\/$/,'');
   const siteInput=document.getElementById('site-url').value.trim();
   maxPages=parseInt(document.getElementById('max-pages').value)||300;
-  if(!workerUrl){alert('Enter your Cloudflare Worker URL.');return;}
-  if(!siteInput){alert('Enter the site URL to crawl.');return;}
-  try{baseUrl=norm(siteInput);}catch{alert('Invalid site URL.');return;}
+  if(!workerUrl){alert('Enter Worker URL.');return;}
+  if(!siteInput){alert('Enter site URL.');return;}
+  try{baseUrl=norm(siteInput);}catch{alert('Invalid URL.');return;}
   document.getElementById('setup').style.display='none';
   document.getElementById('app').style.display='flex';
-  document.getElementById('crawl-target').textContent=baseUrl;
+  document.getElementById('ctgt').textContent=baseUrl;
   queue.push({url:baseUrl,parent:null,depth:0});
   crawlLoop();
 }
@@ -547,70 +483,62 @@ async function crawlLoop(){
     const{url,parent,depth}=queue.shift();
     if(visited.has(url))continue;
     visited.add(url);count++;
-    updateProgress(count,queue.length);
-    addLog(count,url,'testing');
-
+    updateProg(count,queue.length);addLog(count,url,'testing');
     let result;
-    try{result=await fetchPage(url);}
-    catch(e){addLog(count,'✗ '+e.message,'err');await sleep(800);continue;}
-
+    try{result=await fetchPage(url);}catch(e){addLog(count,'✗ '+e.message,'er');await sleep(800);continue;}
     const{html,finalUrl}=result;
-    if(!html){addLog(count,'skip','skip');await sleep(600);continue;}
-
+    if(!html){addLog(count,'skip','sk');await sleep(600);continue;}
     const p=parsePage(html,finalUrl);
     p.navLinks.forEach(u=>navUrls.add(u));
     const isNav=navUrls.has(url)||navUrls.has(finalUrl);
-
-    pages[url]={title:p.title,desc:p.desc,keywords:p.keywords,depth,parent,isNav,finalUrl,contentHTML:p.contentHTML,cleanText:p.cleanText,images:p.images,headings:p.headings,linkCount:p.allLinks.length};
-
-    addLog(count,p.title||url,isNav?'nav':'ok');
-
+    pages[url]={title:p.title,desc:p.desc,keywords:p.keywords,depth,parent,isNav,finalUrl,
+      contentHTML:p.contentHTML,cleanText:p.cleanText,images:p.images,headings:p.headings,linkCount:p.allLinks.length};
+    addLog(count,p.title||url,isNav?'nv':'ok');
     const newNav=p.navLinks.filter(u=>!visited.has(u)&&!queue.find(q=>q.url===u));
     const newAll=p.allLinks.filter(u=>!visited.has(u)&&!p.navLinks.includes(u)&&!queue.find(q=>q.url===u));
     queue.unshift(...newNav.map(u=>({url:u,parent:url,depth:depth+1})));
     queue.push(...newAll.map(u=>({url:u,parent:url,depth:depth+2})));
-
-    renderTree();updateRedirectTable();
-    await sleep(850);
+    renderTree();updateRT();await sleep(850);
   }
   finishCrawl(count);
 }
 
 function stopCrawl(){stopped=true;}
 function finishCrawl(count){
-  document.getElementById('prog-label').textContent=`✓ Done — ${count} pages crawled`;
-  document.getElementById('stop-btn').style.display='none';
-  document.getElementById('restart-btn').style.display='';
-  renderTree();updateRedirectTable();updateJSON();
+  document.getElementById('pl').textContent='✓ Done — '+count+' pages crawled';
+  document.getElementById('stopb').style.display='none';
+  document.getElementById('rstb').style.display='';
+  renderTree();updateRT();updateJSON();
 }
-function updateProgress(done,queued){
+function updateProg(done,queued){
   const total=Math.min(done+queued,maxPages);
-  const pct=Math.round((done/total)*100);
-  document.getElementById('prog-fill').style.width=pct+'%';
-  document.getElementById('prog-label').textContent=`${done} crawled · ${queued} queued`;
+  document.getElementById('pf').style.width=Math.round((done/total)*100)+'%';
+  document.getElementById('pl').textContent=done+' crawled · '+queued+' queued';
 }
 function addLog(n,text,type){
   const el=document.getElementById('log');
-  const d=document.createElement('div');d.className='log-entry '+type;
-  d.innerHTML=`<span class="log-num">${n}</span><span class="log-text" title="${text}">${text}</span>`;
+  const d=document.createElement('div');d.className='le '+type;
+  d.innerHTML='<span class="ln">'+n+'</span><span class="lt" title="'+text+'">'+text+'</span>';
   el.appendChild(d);el.scrollTop=el.scrollHeight;
 }
 
+// ── TABS
 function showTab(name,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
-  el.classList.add('active');document.getElementById('pane-'+name).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('pane-'+name).classList.add('active');
   if(name==='json')updateJSON();
+  if(name==='ai')renderAIList();
 }
 
+// ── TREE
 function buildTree(){
-  const nodes={};
-  const root={url:baseUrl,children:{}};nodes[baseUrl]=root;
+  const nodes={};const root={url:baseUrl,children:{}};nodes[baseUrl]=root;
   Object.keys(pages).forEach(url=>{
     if(!nodes[url])nodes[url]={url,children:{}};
     if(url===baseUrl)return;
-    const p=new URL(url);
-    const parts=p.pathname.split('/').filter(Boolean);
+    const p=new URL(url);const parts=p.pathname.split('/').filter(Boolean);
     const parentPath='/'+parts.slice(0,-1).join('/');
     const parentUrl=norm(p.origin+(parentPath||'/'));
     const parent=nodes[parentUrl]||root;
@@ -624,747 +552,333 @@ function renderNode(node,depth){
   const isNav=navUrls.has(url)||info.isNav;
   const kids=Object.values(node.children||{});
   const hasKids=kids.length>0;
-  const badge=isNav?'<span class="nbadge nav">NAV</span>':'<span class="nbadge page">PAGE</span>';
-  const tog=hasKids?'<span class="tog">▶</span>':'<span class="tog leaf">·</span>';
+  const badge=isNav?'<span class="nb nv">NAV</span>':'<span class="nb pg">PAGE</span>';
+  const tog=hasKids?'<span class="tog">▶</span>':'<span class="tog lf">·</span>';
   const title=info.title||url;
   const slug=url.replace(baseUrl,'')||'/';
-  const childHtml=kids.map(c=>renderNode(c,depth+1)).join('');
-  const childDiv=hasKids?`<div class="nchildren">${childHtml}</div>`:'';
-  const oc=hasKids?'onclick="toggleNode(this)"':'';
-  const safeUrl=url.replace(/'/g,"\\'");
-  return `<div class="tnode ${hasKids?'has-ch':''}" style="--in:${depth*20}px">
-    <div class="nrow" ${oc}>${tog}${badge}
-      <a href="${url}" target="_blank" class="nlink" title="${title}">${title}</a>
-      <span class="nurl">${slug}</span>
-      <button class="view-btn" onclick="openContent('${safeUrl}');event.stopPropagation()">View content</button>
-    </div>${childDiv}</div>`;
+  const ch=kids.map(c=>renderNode(c,depth+1)).join('');
+  const cd=hasKids?'<div class="nc">'+ch+'</div>':'';
+  const oc=hasKids?'onclick="toggleN(this)"':'';
+  const su=url.replace(/'/g,"\\'");
+  return '<div class="tn '+(hasKids?'hc':'')+'" style="--in:'+(depth*19)+'px">'+
+    '<div class="nr" '+oc+'>'+tog+badge+
+    '<a href="'+url+'" target="_blank" class="nl" title="'+title+'">'+title+'</a>'+
+    '<span class="nu">'+slug+'</span>'+
+    '<button class="vb" onclick="openCV(\''+su+'\');event.stopPropagation()">View</button>'+
+    '</div>'+cd+'</div>';
 }
 
 function renderTree(){
-  document.getElementById('tree-root').innerHTML=renderNode(buildTree(),0);
+  document.getElementById('treeroot').innerHTML=renderNode(buildTree(),0);
   const total=Object.keys(pages).length;
   const navCount=[...navUrls].filter(u=>u in pages).length;
-  document.getElementById('stats-bar').innerHTML=`
-    <div class="stat"><div class="stat-v">${total}</div><div class="stat-l">Pages</div></div>
-    <div class="stat"><div class="stat-v">${navCount}</div><div class="stat-l">Nav</div></div>
-    <div class="stat"><div class="stat-v">${total-navCount}</div><div class="stat-l">Sub-pages</div></div>
-    <div class="stat"><div class="stat-v">${queue.length}</div><div class="stat-l">Queued</div></div>`;
-  document.querySelectorAll('#tree-root>.tnode').forEach(n=>n.classList.add('open'));
+  document.getElementById('statbar').innerHTML=
+    '<div class="st"><div class="stv">'+total+'</div><div class="stl">Pages</div></div>'+
+    '<div class="st"><div class="stv">'+navCount+'</div><div class="stl">Nav</div></div>'+
+    '<div class="st"><div class="stv">'+(total-navCount)+'</div><div class="stl">Sub-pages</div></div>'+
+    '<div class="st"><div class="stv">'+queue.length+'</div><div class="stl">Queued</div></div>';
+  document.querySelectorAll('#treeroot>.tn').forEach(n=>n.classList.add('op'));
 }
-
-function toggleNode(row){row.closest('.tnode').classList.toggle('open');}
-function expandAll(){document.querySelectorAll('.tnode.has-ch').forEach(n=>n.classList.add('open'));}
-function collapseAll(){document.querySelectorAll('.tnode.has-ch').forEach(n=>n.classList.remove('open'));}
+function toggleN(row){row.closest('.tn').classList.toggle('op');}
+function expandAll(){document.querySelectorAll('.tn.hc').forEach(n=>n.classList.add('op'));}
+function collapseAll(){document.querySelectorAll('.tn.hc').forEach(n=>n.classList.remove('op'));}
 function filterTree(q){
-  const nodes=document.querySelectorAll('.tnode');
+  const nodes=document.querySelectorAll('.tn');
   if(!q){nodes.forEach(n=>n.style.display='');return;}
   q=q.toLowerCase();
   nodes.forEach(n=>{
-    const link=n.querySelector('.nlink')?.textContent?.toLowerCase()||'';
-    const url=n.querySelector('.nurl')?.textContent?.toLowerCase()||'';
-    n.style.display=(link.includes(q)||url.includes(q))?'':'none';
+    const l=n.querySelector('.nl')?.textContent?.toLowerCase()||'';
+    const u=n.querySelector('.nu')?.textContent?.toLowerCase()||'';
+    n.style.display=(l.includes(q)||u.includes(q))?'':'none';
   });
-  nodes.forEach(n=>{if(n.style.display===''){let p=n.parentElement?.closest('.tnode');while(p){p.style.display='';p=p.parentElement?.closest('.tnode');}}});
+  nodes.forEach(n=>{if(n.style.display===''){let p=n.parentElement?.closest('.tn');while(p){p.style.display='';p=p.parentElement?.closest('.tn');}}});
 }
 
-// CONTENT MODAL
-function openContent(url){
-  const info=pages[url];
-  if(!info){alert('Content not yet available for this page.');return;}
-  document.getElementById('modal-title').textContent=info.title||url;
-  const urlEl=document.getElementById('modal-url');urlEl.textContent=url;urlEl.href=url;
-
-  // Preview
-  const prev=document.getElementById('modal-preview');
-  prev.innerHTML=info.contentHTML||'<p style="color:var(--muted)">No content could be extracted from this page.</p>';
+// ── CONTENT VIEWER
+function openCV(url){
+  const info=pages[url];if(!info){alert('Not yet crawled.');return;}
+  document.getElementById('cmtit').textContent=info.title||url;
+  const uel=document.getElementById('cmurl');uel.textContent=url;uel.href=url;
+  const prev=document.getElementById('cmprev');
+  prev.innerHTML=info.contentHTML||'<p style="color:var(--mu)">No content extracted.</p>';
   prev.querySelectorAll('script,style').forEach(el=>el.remove());
-
-  // Text
-  document.getElementById('modal-text').textContent=info.cleanText||'(no text)';
-
-  // Images
+  document.getElementById('cmtxt').textContent=info.cleanText||'';
   const imgs=info.images||[];
-  document.getElementById('img-count').textContent=`${imgs.length} image${imgs.length!==1?'s':''} found`;
-  document.getElementById('modal-images').innerHTML=imgs.length
-    ?imgs.map(i=>`<div class="img-item"><img src="${i.src}" alt="${i.alt}" loading="lazy" onerror="this.parentElement.style.display='none'"><div class="img-item-url" title="${i.src}">${i.src.split('/').pop()}</div></div>`).join('')
-    :'<p style="color:var(--muted);font-size:.85rem">No images found on this page.</p>';
-
-  // Meta
-  document.getElementById('modal-meta').innerHTML=`
-    <tr><td>Title</td><td>${info.title||'—'}</td></tr>
-    <tr><td>URL</td><td><a href="${url}" target="_blank" style="color:var(--accent)">${url}</a></td></tr>
-    <tr><td>Meta description</td><td>${info.desc||'—'}</td></tr>
-    <tr><td>Meta keywords</td><td>${info.keywords||'—'}</td></tr>
-    <tr><td>Images</td><td>${(info.images||[]).length}</td></tr>
-    <tr><td>Internal links</td><td>${info.linkCount||0}</td></tr>
-    <tr><td>Is nav page</td><td>${info.isNav?'Yes':'No'}</td></tr>
-    <tr><td>Depth</td><td>${info.depth||0}</td></tr>
-    <tr><td>Headings</td><td>${(info.headings||[]).map(h=>`<strong>${h.level}:</strong> ${h.text}`).join('<br>')||'—'}</td></tr>`;
-
-  // HTML
-  document.getElementById('modal-html').textContent=(info.contentHTML||'').slice(0,25000);
-
-  showModalTab('preview',document.querySelector('.modal-tab'));
-  document.getElementById('content-modal').classList.add('open');
+  document.getElementById('cmimgc').textContent=imgs.length+' image'+(imgs.length!==1?'s':'')+' found';
+  document.getElementById('cmimgs').innerHTML=imgs.length
+    ?imgs.map(i=>'<div class="ii"><img src="'+i.src+'" alt="'+i.alt+'" loading="lazy" onerror="this.parentElement.style.display=\'none\'"><div class="iu" title="'+i.src+'">'+i.src.split('/').pop()+'</div></div>').join('')
+    :'<p style="color:var(--mu);font-size:.82rem">No images found.</p>';
+  document.getElementById('cmmeta').innerHTML=
+    '<tr><td>Title</td><td>'+(info.title||'—')+'</td></tr>'+
+    '<tr><td>URL</td><td><a href="'+url+'" target="_blank" style="color:var(--ac)">'+url+'</a></td></tr>'+
+    '<tr><td>Meta desc</td><td>'+(info.desc||'—')+'</td></tr>'+
+    '<tr><td>Keywords</td><td>'+(info.keywords||'—')+'</td></tr>'+
+    '<tr><td>Images</td><td>'+(info.images||[]).length+'</td></tr>'+
+    '<tr><td>Links</td><td>'+(info.linkCount||0)+'</td></tr>'+
+    '<tr><td>Is nav</td><td>'+(info.isNav?'Yes':'No')+'</td></tr>'+
+    '<tr><td>Depth</td><td>'+(info.depth||0)+'</td></tr>'+
+    '<tr><td>Headings</td><td>'+(info.headings||[]).map(h=>'<strong>'+h.level+':</strong> '+h.text).join('<br>')||'—'+'</td></tr>';
+  document.getElementById('cmhtml').textContent=(info.contentHTML||'').slice(0,25000);
+  showCMT('prev',document.querySelector('.cmt'));
+  document.getElementById('cm').classList.add('open');
 }
-
-function showModalTab(name,el){
-  document.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.modal-pane').forEach(p=>p.classList.remove('active'));
+function showCMT(name,el){
+  document.querySelectorAll('.cmt').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.cmpn').forEach(p=>p.classList.remove('active'));
   if(el)el.classList.add('active');
-  document.getElementById('mpane-'+name).classList.add('active');
+  document.getElementById('cmpn-'+name).classList.add('active');
 }
-function closeModalBg(e){if(e.target===document.getElementById('content-modal'))closeModal();}
-function closeModal(){document.getElementById('content-modal').classList.remove('open');}
-function copyText(){navigator.clipboard.writeText(document.getElementById('modal-text').textContent).catch(()=>{});}
-function copyHTML(){navigator.clipboard.writeText(document.getElementById('modal-html').textContent).catch(()=>{});}
+function closeCM(e){if(e.target===document.getElementById('cm'))closeCMd();}
+function closeCMd(){document.getElementById('cm').classList.remove('open');}
+function cpTxt(){navigator.clipboard.writeText(document.getElementById('cmtxt').textContent).catch(()=>{});}
+function cpHTML(){navigator.clipboard.writeText(document.getElementById('cmhtml').textContent).catch(()=>{});}
 
-// REDIRECT TABLE
-function updateRedirectTable(){
+// ── REDIRECT TABLE
+function updateRT(){
   const urls=Object.keys(pages).sort();
-  document.getElementById('redir-count').textContent=`Redirect Map (${urls.length} URLs)`;
-  document.getElementById('redir-body').innerHTML=urls.map(url=>{
+  document.getElementById('rcount').textContent='Redirect Map ('+urls.length+' URLs)';
+  document.getElementById('rbody').innerHTML=urls.map(url=>{
     const slug=new URL(url).pathname||'/';
-    return `<tr><td class="old-u"><code title="${url}">${url}</code></td><td><code>${slug}</code></td><td><input type="text" value="${slug}"/></td><td><select><option>301</option><option>302</option><option>Gone</option><option>Keep</option></select></td></tr>`;
+    return '<tr><td class="ou"><code title="'+url+'">'+url+'</code></td><td><code>'+slug+'</code></td>'+
+      '<td><input type="text" value="'+slug+'"/></td>'+
+      '<td><select><option>301</option><option>302</option><option>Gone</option><option>Keep</option></select></td></tr>';
   }).join('');
 }
-function getTableData(){return[...document.querySelectorAll('#redir-table tbody tr')].map(r=>{const tds=r.querySelectorAll('td');return{old_url:tds[0].querySelector('code').textContent,old_path:tds[1].querySelector('code').textContent,new_path:tds[2].querySelector('input').value,type:tds[3].querySelector('select').value};});}
-function exportCSV(){let csv='Old URL,Old Path,New Path,Type\n';getTableData().forEach(r=>csv+=`"${r.old_url}","${r.old_path}","${r.new_path}","${r.type}"\n`);dl('redirects.csv',csv,'text/csv');}
-function exportApache(){let out='# 301 Redirects\nRewriteEngine On\n\n';getTableData().filter(r=>r.type==='301').forEach(r=>out+=`Redirect 301 ${r.old_path} ${r.new_path}\n`);dl('redirects.htaccess',out,'text/plain');}
-function exportNginx(){let out='# 301 Redirects\n\n';getTableData().filter(r=>r.type==='301').forEach(r=>out+=`rewrite ^${r.old_path}$ ${r.new_path} permanent;\n`);dl('redirects.nginx.conf',out,'text/plain');}
+function getTD(){return[...document.querySelectorAll('#rtable tbody tr')].map(r=>{const t=r.querySelectorAll('td');return{old_url:t[0].querySelector('code').textContent,old_path:t[1].querySelector('code').textContent,new_path:t[2].querySelector('input').value,type:t[3].querySelector('select').value};});}
+function exportCSV(){let c='Old URL,Old Path,New Path,Type\n';getTD().forEach(r=>c+='"'+r.old_url+'","'+r.old_path+'","'+r.new_path+'","'+r.type+'"\n');dl('redirects.csv',c,'text/csv');}
+function exportApache(){let o='# 301 Redirects\nRewriteEngine On\n\n';getTD().filter(r=>r.type==='301').forEach(r=>o+='Redirect 301 '+r.old_path+' '+r.new_path+'\n');dl('redirects.htaccess',o,'text/plain');}
+function exportNginx(){let o='# 301 Redirects\n\n';getTD().filter(r=>r.type==='301').forEach(r=>o+='rewrite ^'+r.old_path+'$ '+r.new_path+' permanent;\n');dl('redirects.nginx.conf',o,'text/plain');}
 
+// ── JSON
 function updateJSON(){
-  const data={base_url:baseUrl,crawled_at:new Date().toISOString(),total:Object.keys(pages).length,
-    pages:Object.fromEntries(Object.entries(pages).map(([url,info])=>[url,{title:info.title,desc:info.desc,keywords:info.keywords,is_nav:navUrls.has(url),depth:info.depth,image_count:(info.images||[]).length,headings:info.headings,link_count:info.linkCount,clean_text_preview:(info.cleanText||'').slice(0,300)+'…'}]))};
-  document.getElementById('json-out').textContent=JSON.stringify(data,null,2);
+  document.getElementById('jsonout').textContent=JSON.stringify({base_url:baseUrl,crawled_at:new Date().toISOString(),total:Object.keys(pages).length,
+    pages:Object.fromEntries(Object.entries(pages).map(([url,info])=>[url,{title:info.title,desc:info.desc,is_nav:navUrls.has(url),depth:info.depth,image_count:(info.images||[]).length,headings:info.headings,link_count:info.linkCount}]))},null,2);
 }
-function downloadJSON(){
-  updateJSON();dl('site-pages.json',document.getElementById('json-out').textContent,'application/json');
-}
-function dl(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();}
-</script>
+function dlJSON(){updateJSON();dl('site-pages.json',document.getElementById('jsonout').textContent,'application/json');}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script>
-// ── STATIC SITE EXPORT ────────────────────────────────────────────────────
-function urlToPath(url) {
-  try {
-    let path = new URL(url).pathname.replace(/^\//, '').replace(/\/$/, '');
-    if (!path) return 'index.html';
-    return path + '/index.html';
-  } catch { return 'index.html'; }
-}
-
-function buildNavHTML(navstyle, sitename, primaryColor, currentUrl) {
-  // Build a 2-level nav: top-level items (depth 0-1, 1 path segment) with dropdown children
-  const allPageEntries = Object.entries(pages);
-
-  // Top-level nav items: 1 path segment, is nav
-  const topItems = allPageEntries.filter(([url, info]) => {
-    try {
-      const parts = new URL(url).pathname.split('/').filter(Boolean);
-      return parts.length <= 1 && (info.isNav || navUrls.has(url));
-    } catch { return false; }
-  });
-
-  // Build children map: for each top item, find pages that start with its path
-  const navLinks = topItems.map(([url, info]) => {
-    const topPath = (() => { try { return new URL(url).pathname.replace(/\/$/, ''); } catch { return ''; } })();
-    const isActive = url === currentUrl;
-
-    // Find children: pages whose path starts with this top path and are 1 level deeper
-    const children = allPageEntries.filter(([cUrl, cInfo]) => {
-      if (cUrl === url) return false;
-      try {
-        const cPath = new URL(cUrl).pathname.replace(/\/$/, '');
-        const cParts = cPath.split('/').filter(Boolean);
-        const topParts = topPath.split('/').filter(Boolean);
-        return topParts.length > 0 && cPath.startsWith(topPath + '/') && cParts.length === topParts.length + 1;
-      } catch { return false; }
-    });
-
-    const slug = topPath || '/';
-    const href = slug === '/' ? '/' : slug + '/';
-    const activeClass = isActive ? ' active' : '';
-
-    if (children.length > 0) {
-      const childLinks = children.map(([cUrl, cInfo]) => {
-        const cPath = (() => { try { return new URL(cUrl).pathname.replace(/\/$/, ''); } catch { return ''; } })();
-        const cActive = cUrl === currentUrl ? ' class="active"' : '';
-        return `<li><a href="${cPath}/"${cActive}>${cInfo.title || cUrl}</a></li>`;
-      }).join('\n');
-      return `<li class="has-dropdown${activeClass}"><a href="${href}">${info.title || url}</a><ul class="dropdown">${childLinks}</ul></li>`;
-    }
-    return `<li><a href="${href}"class="${activeClass}">${info.title || url}</a></li>`;
-  }).join('\n');
-
-  const brand = `<div class="site-brand"><a href="/">${sitename}</a></div>`;
-  const toggle = `<button class="nav-toggle" onclick="this.closest('nav').classList.toggle('open')">&#9776;</button>`;
-
-  if (navstyle === 'sidebar') {
-    return `<nav class="sidebar">${brand}<ul>${navLinks}</ul></nav>`;
-  }
-  return `<nav class="topnav">${brand}<ul class="nav-list">${navLinks}</ul>${toggle}</nav>`;
-}
-
-
-function generatePageHTML(url, info, sitename, primaryColor, navstyle) {
-  const nav = buildNavHTML(navstyle, sitename, primaryColor, url);
-  const isTopbar = navstyle === 'topbar';
-  const bodyClass = isTopbar ? 'has-topnav' : 'has-sidebar';
-
-  // Breadcrumbs
-  const parts = new URL(url).pathname.split('/').filter(Boolean);
-  let crumbs = '<a href="/">Home</a>';
-  let cumPath = '';
-  parts.forEach((p, i) => {
-    cumPath += '/' + p;
-    if (i < parts.length - 1) crumbs += ` &rsaquo; <a href="${cumPath}/">${p}</a>`;
-    else crumbs += ` &rsaquo; <span>${info.title}</span>`;
-  });
-
-  // Remove first h1 from content to avoid duplication with our page-title h1
-  let content = (info.contentHTML || '<p>Content coming soon.</p>');
-  content = content.replace(/<h1[^>]*>.*?<\/h1>/is, '');
-  // Strip Drupal artifacts
-  content = content.replace(/<[^>]*class="[^"]*skip[^"]*"[^>]*>.*?<\/[^>]+>/gis, '');
-  content = content.replace(/<[^>]*id="skip[^"]*"[^>]*>.*?<\/[^>]+>/gis, '');
-  content = content.replace(/<[^>]*class="[^"]*contextual[^"]*"[^>]*>.*?<\/[^>]+>/gis, '');
-  content = content.replace(/You are here[\s\S]{0,200}?(<\/[^>]+>)/gi, '');
-  content = content.replace(/<div[^>]*class="[^"]*messages[^"]*"[^>]*>[\s\S]*?<\/div>/gi, '');
-
-  // Rewrite all internal links to relative paths
-  const hostname = new URL(baseUrl).hostname;
-  content = content.replace(/href="https?:\/\/[^"]*"/gi, (match) => {
-    try {
-      const u = new URL(match.slice(6, -1));
-      if (u.hostname === hostname) {
-        const p = u.pathname.replace(/\/$/, '') || '/';
-        return 'href="' + (p === '/' ? '/' : p + '/') + '"';
-      }
-    } catch {}
-    return match;
-  });
-  const desc = info.desc || '';
-  const year = new Date().getFullYear();
-
-  const isHome = parts.length === 0;
-  const heroSection = isHome ? '' : `
-    <div class="page-hero">
-      <div class="breadcrumb">${crumbs}</div>
-      <h1 class="page-title">${info.title}</h1>
-    </div>`;
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${info.title} — ${sitename}</title>
-${desc ? `<meta name="description" content="${desc.replace(/"/g,'&quot;')}">` : ''}
-<link rel="stylesheet" href="/assets/style.css">
-</head>
-<body class="${bodyClass}">
-  ${nav}
-  <div class="page-wrapper">
-    ${heroSection}
-    <main class="main-content">
-      ${isHome ? '' : ''}
-      <div class="page-body">
-        ${content}
-      </div>
-    </main>
-    <footer class="site-footer">
-      <div class="footer-inner">
-        <div class="footer-brand-col">
-          <span class="footer-brand">${sitename}</span>
-          <p>Supporting parents through pregnancy, birth and early parenting across Australia.</p>
-        </div>
-        <div class="footer-col">
-          <h4>About Us</h4>
-          <ul>
-            <li><a href="/what-we-do/">What we do</a></li>
-            <li><a href="/our-mission-and-vision/">Our Mission and Values</a></li>
-            <li><a href="/media/">Press Links</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Security</h4>
-          <ul>
-            <li><a href="/our-privacy-policy/">Our Security Policy</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Contact Us</h4>
-          <p>Ph: (02) 9986 2282<br>Email: info@montessori.org.au</p>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span class="footer-copy">&copy; ${year} ${sitename}. All rights reserved.</span>
-      </div>
-    </footer>
-  </div>
-  <script>
-    // Mobile dropdown toggles
-    document.querySelectorAll('.has-dropdown > a').forEach(a => {
-      a.addEventListener('click', e => {
-        if (window.innerWidth <= 900) {
-          e.preventDefault();
-          a.closest('.has-dropdown').classList.toggle('open');
-        }
-      });
-    });
-  </script>
-</body>
-</html>`;
-}
-
-function generateCSS(primaryColor, navstyle) {
+// ── EXPORT SITE CSS
+function generateCSS(){
   return `@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap');
-
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --primary:#4C4CF4;
-  --purple:#9F34F9;
-  --gradient:linear-gradient(135deg,#4C4CF4,#9F34F9);
-  --bg:#F9F9FD;
-  --text:#2D3748;
-  --muted:#718096;
-  --border:#E2E8F0;
-  --surface:#FFFFFF;
-  --nav-h:64px;
-  --radius:14px;
-  --radius-sm:8px;
-  --glass:rgba(255,255,255,0.72);
-  --glass-border:rgba(255,255,255,0.45);
-  --shadow:0 4px 24px rgba(76,76,244,.08),0 1px 4px rgba(0,0,0,.04);
-  --shadow-hover:0 8px 32px rgba(76,76,244,.14);
-  --font:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-}
-body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.75;font-size:16px;-webkit-font-smoothing:antialiased}
-
-/* ── GLASS NAV ── */
-.topnav{
-  position:fixed;top:0;left:0;right:0;z-index:1000;
-  height:var(--nav-h);
-  background:var(--glass);
-  backdrop-filter:blur(20px) saturate(180%);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);
-  border-bottom:1px solid var(--glass-border);
-  display:flex;align-items:center;padding:0 2rem;gap:1.5rem;
-  box-shadow:0 1px 0 rgba(255,255,255,.6),0 2px 20px rgba(76,76,244,.06);
-}
-.topnav .site-brand a{
-  font-size:1.05rem;font-weight:700;letter-spacing:-.02em;text-decoration:none;
-  background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  white-space:nowrap;
-}
+:root{--primary:#4C4CF4;--purple:#9F34F9;--grad:linear-gradient(135deg,#4C4CF4,#9F34F9);--bg:#F9F9FD;--tx:#2D3748;--mu:#718096;--bd:#E2E8F0;--sf:#FFF;--nav-h:64px;--r:14px;--r2:8px;--glass:rgba(255,255,255,.72);--gbd:rgba(255,255,255,.45);--sh:0 4px 24px rgba(76,76,244,.08),0 1px 4px rgba(0,0,0,.04);--shh:0 8px 32px rgba(76,76,244,.14);--fn:'Roboto',-apple-system,sans-serif}
+body{font-family:var(--fn);background:var(--bg);color:var(--tx);line-height:1.75;font-size:16px;-webkit-font-smoothing:antialiased}
+.topnav{position:fixed;top:0;left:0;right:0;z-index:1000;height:var(--nav-h);background:var(--glass);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--gbd);display:flex;align-items:center;padding:0 2rem;gap:1.5rem;box-shadow:0 1px 0 rgba(255,255,255,.6),0 2px 20px rgba(76,76,244,.06)}
+.topnav .brand a{font-size:1.05rem;font-weight:700;letter-spacing:-.02em;text-decoration:none;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap}
 .nav-list{display:flex;list-style:none;height:var(--nav-h);align-items:center;margin-left:auto}
 .nav-list>li{position:relative;height:100%;display:flex;align-items:center}
-.nav-list>li>a{
-  display:flex;align-items:center;height:100%;
-  color:var(--text);text-decoration:none;
-  padding:0 .9rem;font-size:.875rem;font-weight:500;
-  white-space:nowrap;transition:color .15s;
-  border-bottom:2px solid transparent;margin-bottom:-1px;
-}
-.nav-list>li>a:hover{color:var(--primary)}
-.nav-list>li>a.active{color:var(--primary);border-bottom-color:var(--primary)}
-.nav-list>li.has-dropdown>a::after{content:' ⌄';opacity:.5;font-size:.75rem;margin-left:.1rem}
-
-/* Dropdown — glass */
-.dropdown{
-  display:none;position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);
-  background:var(--glass);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);
-  border:1px solid var(--glass-border);border-radius:var(--radius);
-  min-width:210px;list-style:none;
-  box-shadow:var(--shadow);overflow:hidden;z-index:500;
-}
-.nav-list>li.has-dropdown:hover .dropdown{display:block}
-.dropdown li a{
-  display:block;padding:.65rem 1.1rem;color:var(--text);
-  text-decoration:none;font-size:.875rem;font-weight:400;
-  border-bottom:1px solid rgba(226,232,240,.6);transition:all .12s;
-}
-.dropdown li:last-child a{border-bottom:none}
-.dropdown li a:hover{background:rgba(76,76,244,.07);color:var(--primary);padding-left:1.4rem}
-
-.nav-toggle{display:none;background:none;border:1px solid var(--border);color:var(--text);padding:.35rem .65rem;border-radius:var(--radius-sm);cursor:pointer;font-size:1rem;margin-left:auto}
-.has-topnav .page-wrapper{padding-top:var(--nav-h)}
-
-/* ── PAGE HERO ── */
-.page-hero{
-  background:var(--gradient);
-  padding:3.5rem 2rem 3rem;color:white;
-  position:relative;overflow:hidden;
-}
-.page-hero::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at 80% 50%,rgba(255,255,255,.1),transparent 60%);
-  pointer-events:none;
-}
-.page-hero .breadcrumb{color:rgba(255,255,255,.6);font-size:.8rem;margin-bottom:.75rem}
-.page-hero .breadcrumb a{color:rgba(255,255,255,.75);text-decoration:none}
-.page-hero .breadcrumb a:hover{color:white}
-.page-hero .page-title{font-size:2.2rem;font-weight:700;color:white;letter-spacing:-.03em;line-height:1.25}
-
-/* ── LAYOUT ── */
-.page-wrapper{min-height:100vh;display:flex;flex-direction:column}
-.main-content{flex:1;max-width:940px;margin:0 auto;padding:2.5rem 2rem;width:100%}
-.breadcrumb{display:flex;align-items:center;gap:.35rem;font-size:.8rem;color:var(--muted);margin-bottom:1.5rem;flex-wrap:wrap}
-.breadcrumb a{color:var(--primary);text-decoration:none}
-.page-title{font-size:2rem;font-weight:700;color:var(--text);margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:3px solid var(--primary);letter-spacing:-.02em}
-
-/* ── CONTENT ── */
-.page-body{font-size:1rem;color:var(--text)}
-.page-body h2{font-size:1.35rem;font-weight:600;color:var(--primary);margin-top:2.25rem;margin-bottom:.6rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)}
-.page-body h3{font-size:1.05rem;font-weight:600;color:#9F34F9;margin-top:1.5rem;margin-bottom:.45rem}
-.page-body h4{font-size:1rem;font-weight:600;color:var(--text)}
-.page-body p{margin-bottom:1rem;line-height:1.8;color:var(--text)}
-.page-body ul,.page-body ol{padding-left:1.5rem;margin:.5rem 0 1rem}
-.page-body li{margin-bottom:.4rem}
-.page-body a{color:var(--primary);text-decoration:none;font-weight:500}
-.page-body a:hover{text-decoration:underline}
-.page-body img{max-width:100%;border-radius:var(--radius);margin:1.25rem 0;box-shadow:var(--shadow);height:auto}
-.page-body table{width:100%;border-collapse:collapse;margin:1.25rem 0;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
-.page-body th{background:var(--gradient);color:white;padding:.75rem 1rem;font-weight:600;font-size:.9rem;text-align:left}
-.page-body td{padding:.7rem 1rem;border-bottom:1px solid var(--border);font-size:.9rem}
-.page-body tr:last-child td{border-bottom:none}
-.page-body tr:nth-child(even) td{background:rgba(76,76,244,.025)}
-.page-body blockquote{border-left:4px solid var(--primary);padding:1rem 1.5rem;background:rgba(76,76,244,.05);border-radius:0 var(--radius) var(--radius) 0;margin:1.25rem 0;color:var(--muted);font-style:italic}
-
-/* ── GLASS CARDS (for content pages that use card grids) ── */
-.page-body .views-row,.page-body .card{
-  background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  border:1px solid var(--glass-border);border-radius:var(--radius);
-  padding:1.25rem;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s;
-}
-.page-body .views-row:hover,.page-body .card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px)}
-
-/* ── FOOTER ── */
-.site-footer{background:#1A202C;color:rgba(255,255,255,.65);padding:3rem 2rem 1.5rem;margin-top:auto;font-size:.875rem}
-.footer-inner{max-width:940px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2rem;padding-bottom:2rem;border-bottom:1px solid rgba(255,255,255,.08)}
-.footer-brand-col .footer-brand{
-  font-size:1.05rem;font-weight:700;display:block;margin-bottom:.5rem;letter-spacing:-.01em;
-  background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
-.footer-brand-col p{color:rgba(255,255,255,.4);font-size:.82rem;line-height:1.6}
-.footer-col h4{color:rgba(255,255,255,.85);font-size:.8rem;font-weight:600;margin-bottom:.75rem;letter-spacing:.06em;text-transform:uppercase}
-.footer-col ul{list-style:none}
-.footer-col ul li{margin-bottom:.4rem}
-.footer-col ul li a{color:rgba(255,255,255,.5);text-decoration:none;font-size:.85rem;transition:color .15s}
-.footer-col ul li a:hover{color:white}
-.footer-col p{color:rgba(255,255,255,.5);font-size:.85rem;line-height:1.7}
-.footer-bottom{max-width:940px;margin:1.25rem auto 0;display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap}
-.footer-copy{color:rgba(255,255,255,.25);font-size:.78rem}
-
-/* ── RESPONSIVE ── */
+.nav-list>li>a{display:flex;align-items:center;height:100%;color:var(--tx);text-decoration:none;padding:0 .9rem;font-size:.875rem;font-weight:500;white-space:nowrap;transition:color .15s;border-bottom:2px solid transparent;margin-bottom:-1px}
+.nav-list>li>a:hover{color:var(--primary)}.nav-list>li>a.active{color:var(--primary);border-bottom-color:var(--primary)}
+.nav-list>li.hd>a::after{content:' ⌄';opacity:.5;font-size:.75rem;margin-left:.1rem}
+.drop{display:none;position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);background:var(--glass);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border:1px solid var(--gbd);border-radius:var(--r);min-width:210px;list-style:none;box-shadow:var(--sh);overflow:hidden;z-index:500}
+.nav-list>li.hd:hover .drop{display:block}
+.drop li a{display:block;padding:.65rem 1.1rem;color:var(--tx);text-decoration:none;font-size:.875rem;border-bottom:1px solid rgba(226,232,240,.6);transition:all .12s}
+.drop li:last-child a{border-bottom:none}
+.drop li a:hover{background:rgba(76,76,244,.07);color:var(--primary);padding-left:1.4rem}
+.ntog{display:none;background:none;border:1px solid var(--bd);color:var(--tx);padding:.35rem .65rem;border-radius:var(--r2);cursor:pointer;font-size:1rem;margin-left:auto}
+.has-topnav .pw{padding-top:var(--nav-h)}
+.page-hero{background:var(--grad);padding:3.5rem 2rem 3rem;color:white;position:relative;overflow:hidden}
+.page-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(255,255,255,.1),transparent 60%);pointer-events:none}
+.page-hero .bc{color:rgba(255,255,255,.6);font-size:.8rem;margin-bottom:.75rem}
+.page-hero .bc a{color:rgba(255,255,255,.75);text-decoration:none}
+.page-hero .pt{font-size:2.2rem;font-weight:700;color:white;letter-spacing:-.03em;line-height:1.25}
+.pw{min-height:100vh;display:flex;flex-direction:column}
+.mc{flex:1;max-width:940px;margin:0 auto;padding:2.5rem 2rem;width:100%}
+.bc{display:flex;align-items:center;gap:.35rem;font-size:.8rem;color:var(--mu);margin-bottom:1.5rem;flex-wrap:wrap}
+.bc a{color:var(--primary);text-decoration:none}
+.pt{font-size:2rem;font-weight:700;color:var(--tx);margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:3px solid var(--primary);letter-spacing:-.02em}
+.pb{font-size:1rem;color:var(--tx)}
+.pb h2{font-size:1.35rem;font-weight:600;color:var(--primary);margin-top:2.25rem;margin-bottom:.6rem;padding-bottom:.35rem;border-bottom:1px solid var(--bd)}
+.pb h3{font-size:1.05rem;font-weight:600;color:#9F34F9;margin-top:1.5rem;margin-bottom:.45rem}
+.pb h4{font-size:1rem;font-weight:600;color:var(--tx)}
+.pb p{margin-bottom:1rem;line-height:1.8}
+.pb ul,.pb ol{padding-left:1.5rem;margin:.5rem 0 1rem}
+.pb li{margin-bottom:.4rem}
+.pb a{color:var(--primary);text-decoration:none;font-weight:500}
+.pb a:hover{text-decoration:underline}
+.pb img{max-width:100%;border-radius:var(--r);margin:1.25rem 0;box-shadow:var(--sh);height:auto}
+.pb table{width:100%;border-collapse:collapse;margin:1.25rem 0;border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.pb th{background:var(--grad);color:white;padding:.75rem 1rem;font-weight:600;font-size:.9rem;text-align:left}
+.pb td{padding:.7rem 1rem;border-bottom:1px solid var(--bd);font-size:.9rem}
+.pb tr:last-child td{border-bottom:none}
+.pb tr:nth-child(even) td{background:rgba(76,76,244,.025)}
+.pb blockquote{border-left:4px solid var(--primary);padding:1rem 1.5rem;background:rgba(76,76,244,.05);border-radius:0 var(--r) var(--r) 0;margin:1.25rem 0;color:var(--mu);font-style:italic}
+.sf{background:#1A202C;color:rgba(255,255,255,.65);padding:3rem 2rem 1.5rem;margin-top:auto;font-size:.875rem}
+.fi{max-width:940px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2rem;padding-bottom:2rem;border-bottom:1px solid rgba(255,255,255,.08)}
+.fc0 .fb{font-size:1.05rem;font-weight:700;display:block;margin-bottom:.5rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.fc0 p{color:rgba(255,255,255,.4);font-size:.82rem;line-height:1.6}
+.fc h4{color:rgba(255,255,255,.85);font-size:.8rem;font-weight:600;margin-bottom:.75rem;letter-spacing:.06em;text-transform:uppercase}
+.fc ul{list-style:none}.fc ul li{margin-bottom:.4rem}
+.fc ul li a{color:rgba(255,255,255,.5);text-decoration:none;font-size:.85rem;transition:color .15s}
+.fc ul li a:hover{color:white}
+.fc p{color:rgba(255,255,255,.5);font-size:.85rem;line-height:1.7}
+.fb2{max-width:940px;margin:1.25rem auto 0;display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap}
+.fc2{color:rgba(255,255,255,.25);font-size:.78rem}
 @media(max-width:900px){
-  .nav-toggle{display:block}
-  .nav-list{display:none;position:fixed;top:var(--nav-h);left:0;right:0;flex-direction:column;background:var(--glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--glass-border);padding:.5rem 0;height:auto;margin:0;overflow-y:auto;max-height:calc(100vh - var(--nav-h))}
-  .topnav.open .nav-list{display:flex}
-  .nav-list>li{height:auto;width:100%}
-  .nav-list>li>a{padding:.75rem 1.5rem;border-bottom:1px solid var(--border)}
-  .dropdown{position:static;transform:none;box-shadow:none;border:none;border-radius:0;background:rgba(76,76,244,.06);animation:none;display:none}
-  .nav-list>li.has-dropdown.open .dropdown{display:block}
-  .dropdown li a{padding:.6rem 1.5rem .6rem 2.5rem}
-  .footer-inner{grid-template-columns:1fr 1fr}
-  .page-hero .page-title{font-size:1.6rem}
-  .main-content{padding:1.5rem 1rem}
-}
-`;
+.ntog{display:block}
+.nav-list{display:none;position:fixed;top:var(--nav-h);left:0;right:0;flex-direction:column;background:var(--glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--gbd);padding:.5rem 0;height:auto;margin:0;overflow-y:auto;max-height:calc(100vh - var(--nav-h))}
+.topnav.open .nav-list{display:flex}
+.nav-list>li{height:auto;width:100%}
+.nav-list>li>a{padding:.75rem 1.5rem;border-bottom:1px solid var(--bd)}
+.drop{position:static;transform:none;box-shadow:none;border:none;border-radius:0;background:rgba(76,76,244,.06);display:none}
+.nav-list>li.hd.open .drop{display:block}
+.drop li a{padding:.6rem 1.5rem .6rem 2.5rem}
+.fi{grid-template-columns:1fr 1fr}
+.page-hero .pt{font-size:1.6rem}
+.mc{padding:1.5rem 1rem}
+}`;
 }
 
-
-function generateHtaccess() {
-  const urls = Object.keys(pages).sort();
-  let out = '# 301 Redirects — Generated by SiteCrawler\n';
-  out += 'RewriteEngine On\n\n';
-  out += '# Remove trailing slashes\n';
-  out += 'RewriteCond %{REQUEST_FILENAME} !-d\n';
-  out += 'RewriteRule ^(.*)/$ /$1 [R=301,L]\n\n';
-  out += '# Page redirects\n';
-  urls.forEach(url => {
-    try {
-      const slug = new URL(url).pathname;
-      if (slug && slug !== '/') {
-        out += `Redirect 301 ${slug} /${urlToPath(url).replace('/index.html','')}\n`;
-      }
-    } catch {}
+// ── NAV BUILDER
+function buildNav(sitename,currentUrl){
+  const topItems=Object.entries(pages).filter(([url,info])=>{
+    try{const parts=new URL(url).pathname.split('/').filter(Boolean);return parts.length<=1&&(info.isNav||navUrls.has(url));}catch{return false;}
   });
-  return out;
-}
-
-async function exportStaticSite() {
-  // Check JSZip loaded
-  if (typeof JSZip === 'undefined') {
-    alert('JSZip library failed to load. Check your internet connection and try refreshing the page.');
-    return;
-  }
-
-  const total = Object.keys(pages).length;
-  if (total === 0) { alert('No pages crawled yet. Run a crawl first.'); return; }
-
-  const sitename = document.getElementById('exp-sitename').value || 'My Site';
-  const primaryColor = document.getElementById('exp-color').value || '#2c7a6e';
-  const navstyle = document.getElementById('exp-navstyle').value;
-
-  const btn = document.getElementById('export-btn');
-  const prog = document.getElementById('export-progress');
-  btn.disabled = true;
-  btn.textContent = 'Building ZIP…';
-
-  try {
-
-  const zip = new JSZip();
-  const assets = zip.folder('assets');
-
-  // CSS
-  assets.file('style.css', generateCSS(primaryColor, navstyle));
-
-  // .htaccess
-  zip.file('.htaccess', generateHtaccess());
-
-  // Generate each page
-  let count = 0;
-  for (const [url, info] of Object.entries(pages)) {
-    count++;
-    prog.textContent = `Generating ${count}/${total}: ${info.title || url}`;
-    const html = generatePageHTML(url, info, sitename, primaryColor, navstyle);
-    const filePath = urlToPath(url);
-    zip.file(filePath, html);
-  }
-
-  // Migration reference map (simple HTML)
-  let mapRows = Object.entries(pages).map(([url, info]) => `<tr><td>${info.title}</td><td><a href="${url}" target="_blank">${url}</a></td><td>${new URL(url).pathname}</td></tr>`).join('');
-  zip.file('migration-map.html', `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Migration Map</title><style>body{font-family:sans-serif;padding:2rem}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:.5rem .75rem;text-align:left}th{background:#f5f5f5}</style></head><body><h1>Migration Map</h1><p>Generated by SiteCrawler — ${new Date().toLocaleString()}</p><table><thead><tr><th>Page Title</th><th>Old URL</th><th>Old Path</th></tr></thead><tbody>${mapRows}</tbody></table></body></html>`);
-
-  prog.textContent = 'Compressing ZIP…';
-  const blob = await zip.generateAsync({type:'blob', compression:'DEFLATE', compressionOptions:{level:6}});
-
-  prog.textContent = `Done! ${total} pages → ZIP ready.`;
-  btn.disabled = false;
-  btn.textContent = '📦 Download Static Site ZIP';
-
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'static-site.zip';
-  a.click();
-
-  } catch(err) {
-    prog.textContent = 'Error: ' + err.message;
-    btn.disabled = false;
-    btn.textContent = '📦 Download Static Site ZIP';
-    alert('Export failed: ' + err.message);
-    console.error(err);
-  }
-}
-
-// ── AI REGENERATE ─────────────────────────────────────────────────────────
-const aiResults = {};   // url → {html, approved, status}
-let currentAIUrl = null;
-
-function renderAIList() {
-  const container = document.getElementById('ai-page-list');
-  const urls = Object.keys(pages);
-  if (!urls.length) { container.innerHTML = '<div class="ai-empty">Run a crawl first, then come back here.</div>'; return; }
-
-  document.getElementById('ai-total-count').textContent = urls.length;
-  const approved = Object.values(aiResults).filter(r=>r.approved).length;
-  document.getElementById('ai-done-count').textContent = approved;
-  // estimate: ~1300 tokens per page @ Sonnet pricing $3/M in + $15/M out
-  const est = ((urls.length * 500 * 3 + urls.length * 900 * 15) / 1e6).toFixed(2);
-  document.getElementById('ai-cost-est').textContent = '$' + est;
-
-  container.innerHTML = '<div class="ai-page-grid">' + urls.map(url => {
-    const info = pages[url] || {};
-    const res = aiResults[url] || {};
-    const status = res.status || 'pending';
-    const approvedClass = res.approved ? ' approved' : '';
-    const genClass = status === 'generating' ? ' generating' : '';
-    const statusLabel = res.approved ? 'approved' : status;
-    const canPreview = !!res.html;
-    const safeUrl = url.replace(/'/g, "\'");
-    return `<div class="ai-page-row${approvedClass}${genClass}" id="airow-${btoa(url).replace(/[^a-z0-9]/gi,'').slice(0,12)}">
-      <div class="ai-page-info">
-        <div class="ai-page-title">${info.title || url}</div>
-        <div class="ai-page-url">${url.replace(baseUrl,'') || '/'}</div>
-      </div>
-      <span class="ai-status ${status}">${statusLabel}</span>
-      <div class="ai-row-btns">
-        ${canPreview ? `<button class="btn sm" onclick="openAIPreview('${safeUrl}')">Preview</button>` : ''}
-        <button class="btn sm" onclick="generateOnePage('${safeUrl}')" ${status==='generating'?'disabled':''}>
-          ${status==='generating' ? '...' : res.html ? '↺ Redo' : 'Generate'}
-        </button>
-      </div>
-    </div>`;
-  }).join('') + '</div>';
-}
-
-async function generateOnePage(url) {
-  const apiKey = document.getElementById('ai-key').value.trim();
-  if (!apiKey) { alert('Enter your Anthropic API key first.'); return; }
-
-  const info = pages[url];
-  if (!info) { alert('Page data not found.'); return; }
-
-  // Mark as generating
-  aiResults[url] = { ...(aiResults[url]||{}), status: 'generating', approved: false };
-  renderAIList();
-
-  // Build a tight prompt — just content section, not full page
-  const prompt = `You are rebuilding a website page as clean semantic HTML.
-
-Page title: ${info.title}
-URL path: ${new URL(url).pathname}
-Meta description: ${info.desc || 'none'}
-
-Headings structure:
-${(info.headings||[]).map(h => h.level + ': ' + h.text).join('\n') || 'none'}
-
-Original page text content:
----
-${(info.cleanText||'').slice(0, 3000)}
----
-
-Write ONLY the inner HTML content for the <div class="page-body"> element.
-Do NOT include <html>, <head>, <body>, <nav>, <header>, <footer> tags.
-Use semantic HTML: h2, h3, p, ul, ol, blockquote, table as appropriate.
-Keep all factual content accurate. Make it clean and readable.
-Return only the HTML, no explanation, no markdown fences.`;
-
-  let result;
-  try {
-    const workerUrl = document.getElementById('worker-url').value.trim().replace(/\/$/,'');
-    const res = await fetch(workerUrl + '/ai', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 2048,
-        messages: [{ role: 'user', content: prompt }]
-      }),
-      signal: AbortSignal.timeout(30000)
+  const items=topItems.map(([url,info])=>{
+    const topPath=new URL(url).pathname.replace(/\/$/,'')||'';
+    const children=Object.entries(pages).filter(([cu])=>{
+      try{const cp=new URL(cu).pathname.replace(/\/$/,'');const cp2=cp.split('/').filter(Boolean);const tp2=topPath.split('/').filter(Boolean);
+      return tp2.length>0&&cp.startsWith(topPath+'/')&&cp2.length===tp2.length+1;}catch{return false;}
     });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    if (data.type === 'error') throw new Error(data.error?.message || 'API error');
-    result = data.content?.[0]?.text || '';
-    if (!result) throw new Error('Empty response from API');
-  } catch(e) {
-    aiResults[url] = { status: 'error', html: null, approved: false, error: e.message };
+    const href=topPath?topPath+'/':'/';
+    const active=url===currentUrl?' active':'';
+    if(children.length>0){
+      const cl=children.map(([cu,ci])=>{const cp=new URL(cu).pathname.replace(/\/$/,'');return '<li><a href="'+cp+'/"'+(cu===currentUrl?' class="active"':'')+'>'+ci.title+'</a></li>';}).join('');
+      return '<li class="hd"><a href="'+href+'" class="'+active+'">'+info.title+'</a><ul class="drop">'+cl+'</ul></li>';
+    }
+    return '<li><a href="'+href+'" class="'+active+'">'+info.title+'</a></li>';
+  }).join('');
+  return '<nav class="topnav"><div class="brand"><a href="/">'+sitename+'</a></div><ul class="nav-list">'+items+'</ul><button class="ntog" onclick="this.closest(\'nav\').classList.toggle(\'open\')">&#9776;</button></nav>';
+}
+
+// ── PAGE GENERATOR
+function genPageHTML(url,info,sitename,bodyOverride){
+  const css=generateCSS();
+  const nav=buildNav(sitename,url);
+  const parts=new URL(url).pathname.split('/').filter(Boolean);
+  const isHome=parts.length===0;
+  const yr=new Date().getFullYear();
+  let content=bodyOverride||info.contentHTML||'<p>Content coming soon.</p>';
+  content=content.replace(/<h1[^>]*>.*?<\/h1>/is,'');
+  content=content.replace(/href="https?:\/\/[^"]*"/gi,m=>{
+    try{const u=new URL(m.slice(6,-1));if(u.hostname===new URL(baseUrl).hostname){const p=u.pathname.replace(/\/$/,'')||'/';return 'href="'+(p==='/'?'/':p+'/')+'\"';}}`catch{}return m;});
+  let crumbs='<a href="/">Home</a>';
+  let cPath='';
+  parts.forEach((p,i)=>{cPath+='/'+p;if(i<parts.length-1)crumbs+=' › <a href="'+cPath+'/">'+p+'</a>';else crumbs+=' › <span>'+info.title+'</span>';});
+  const hero=isHome?'':'<div class="page-hero"><div class="bc">'+crumbs+'</div><div class="pt">'+info.title+'</div></div>';
+  const desc=info.desc||'';
+  return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<title>'+info.title+' — '+sitename+'</title>\n'+(desc?'<meta name="description" content="'+desc.replace(/"/g,'&quot;')+'">\n':'')+'<style>'+css+'</style>\n</head>\n<body class="has-topnav">\n'+nav+'\n<div class="pw">\n'+hero+'\n<main class="mc"><div class="pb">'+content+'</div></main>\n<footer class="sf"><div class="fi"><div class="fc0"><span class="fb">'+sitename+'</span><p>Supporting parents through pregnancy, birth and early parenting across Australia.</p></div><div class="fc"><h4>About Us</h4><ul><li><a href="/what-we-do/">What we do</a></li><li><a href="/our-mission-and-vision/">Our Mission</a></li><li><a href="/media/">Press Links</a></li></ul></div><div class="fc"><h4>Security</h4><ul><li><a href="/our-privacy-policy/">Privacy Policy</a></li></ul></div><div class="fc"><h4>Contact Us</h4><p>Ph: (02) 9986 2282<br>info@montessori.org.au</p></div></div><div class="fb2"><span class="fc2">&copy; '+yr+' '+sitename+'. All rights reserved.</span></div></footer>\n</div>\n<script>document.querySelectorAll(\'.hd>a\').forEach(a=>{a.addEventListener(\'click\',e=>{if(window.innerWidth<=900){e.preventDefault();a.closest(\'.hd\').classList.toggle(\'open\');}});});<\/script>\n</body>\n</html>';
+}
+
+// ── EXPORT ZIP
+async function exportStaticSite(){
+  if(typeof JSZip==='undefined'){alert('JSZip not loaded. Check internet connection.');return;}
+  const total=Object.keys(pages).length;
+  if(!total){alert('No pages crawled yet.');return;}
+  const sitename=document.getElementById('exp-sitename').value||'My Site';
+  const btn=document.getElementById('expbtn');
+  const prog=document.getElementById('expprog');
+  btn.disabled=true;btn.textContent='Building ZIP…';
+  try{
+    const zip=new JSZip();
+    zip.folder('assets').file('style.css',generateCSS());
+    let htaccess='# 301 Redirects\nRewriteEngine On\n\n';
+    Object.keys(pages).forEach(url=>{try{const s=new URL(url).pathname;if(s&&s!=='/')htaccess+='Redirect 301 '+s+' /'+urlToPath(url).replace('/index.html','')+'\n';}catch{}});
+    zip.file('.htaccess',htaccess);
+    let count=0;
+    for(const [url,info] of Object.entries(pages)){
+      count++;prog.textContent='Generating '+count+'/'+total+': '+(info.title||url);
+      const aiRes=aiResults[url];
+      const bodyOverride=(aiRes&&aiRes.approved)?aiRes.html:null;
+      zip.file(urlToPath(url),genPageHTML(url,info,sitename,bodyOverride));
+    }
+    prog.textContent='Compressing…';
+    const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
+    prog.textContent='Done! '+total+' pages.';
+    btn.disabled=false;btn.textContent='📦 Download ZIP';
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='static-site.zip';a.click();
+  }catch(err){prog.textContent='Error: '+err.message;btn.disabled=false;btn.textContent='📦 Download ZIP';alert('Export failed: '+err.message);}
+}
+
+// ── AI REGENERATE
+function renderAIList(){
+  const container=document.getElementById('ailist');
+  const urls=Object.keys(pages);
+  if(!urls.length){container.innerHTML='<div class="ai-empty">Run a crawl first, then come back here.</div>';return;}
+  document.getElementById('ai-total').textContent=urls.length;
+  const approved=Object.values(aiResults).filter(r=>r.approved).length;
+  document.getElementById('ai-done').textContent=approved;
+  const est=((urls.length*500*0.8+urls.length*900*4)/1e6).toFixed(2);
+  document.getElementById('ai-cost').textContent='$'+est;
+  container.innerHTML='<div class="ai-rows">'+urls.map(url=>{
+    const info=pages[url]||{};
+    const res=aiResults[url]||{};
+    const st=res.status||'pending';
+    const cls=(res.approved?' appr':st==='generating'?' genr':'');
+    const stLabel=res.approved?'approved':st;
+    const su=url.replace(/'/g,"\\'");
+    return '<div class="ai-row'+cls+'">'+
+      '<div class="ai-info"><div class="ai-ttl">'+(info.title||url)+'</div><div class="ai-url">'+(url.replace(baseUrl,'')||'/')+'</div></div>'+
+      '<span class="ai-badge '+stLabel+'">'+stLabel+'</span>'+
+      '<div class="ai-btns">'+
+      (res.html?'<button class="btn sm" onclick="openAMPreview(\''+su+'\')">Preview</button>':'')+
+      '<button class="btn sm" onclick="genOnePage(\''+su+'\')" '+(st==='generating'?'disabled':'')+'>'+
+      (st==='generating'?'…':res.html?'↺ Redo':'Generate')+'</button>'+
+      '</div></div>';
+  }).join('')+'</div>';
+}
+
+async function genOnePage(url){
+  const apiKey=document.getElementById('aikey').value.trim();
+  if(!apiKey){alert('Enter your Anthropic API key first.');return;}
+  const info=pages[url];if(!info){alert('Page not found.');return;}
+  aiResults[url]={...(aiResults[url]||{}),status:'generating',approved:false};
+  renderAIList();
+  const prompt='You are rebuilding a website page as clean semantic HTML.\n\nPage title: '+info.title+'\nURL path: '+new URL(url).pathname+'\nMeta description: '+(info.desc||'none')+'\n\nHeadings:\n'+((info.headings||[]).map(h=>h.level+': '+h.text).join('\n')||'none')+'\n\nContent:\n---\n'+(info.cleanText||'').slice(0,3000)+'\n---\n\nWrite ONLY the inner HTML for the page body content div. No html/head/body/nav/header/footer tags. Use h2, h3, p, ul, ol, blockquote, table as appropriate. Keep all facts accurate. Return only HTML, no markdown.';
+  try{
+    const wUrl=document.getElementById('worker-url').value.trim().replace(/\/$/,'');
+    const res=await fetch(wUrl+'/ai',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':apiKey},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2048,messages:[{role:'user',content:prompt}]}),
+      signal:AbortSignal.timeout(30000)});
+    const data=await res.json();
+    if(data.type==='error')throw new Error(data.error?.message||'API error');
+    let result=data.content?.[0]?.text||'';
+    if(!result)throw new Error('Empty response');
+    result=result.replace(/^```html?\n?/i,'').replace(/\n?```$/i,'').trim();
+    aiResults[url]={status:'done',html:result,approved:false};
     renderAIList();
-    alert('Generation failed: ' + e.message);
-    return;
-  }
-
-  // Strip any accidental markdown fences
-  result = result.replace(/^```html?\n?/i, '').replace(/\n?```$/i, '').trim();
-
-  aiResults[url] = { status: 'done', html: result, approved: false };
-  renderAIList();
-  // Auto-open preview
-  openAIPreview(url);
-}
-
-function openAIPreview(url) {
-  const info = pages[url] || {};
-  const res = aiResults[url] || {};
-  currentAIUrl = url;
-
-  document.getElementById('ai-modal-title').textContent = info.title || url;
-  document.getElementById('ai-modal-url').textContent = url;
-
-  // Build full preview page inline
-  const fullHtml = buildFullPreviewPage(url, info, res.html || '<p>No content generated yet.</p>');
-  const frame = document.getElementById('ai-preview-frame');
-  frame.srcdoc = fullHtml;
-  document.getElementById('ai-code-view').textContent = res.html || '';
-
-  switchAIView('preview', document.querySelector('.ai-mtab'));
-  document.getElementById('ai-modal').classList.add('open');
-}
-
-function buildFullPreviewPage(url, info, bodyHtml) {
-  const sitename = document.getElementById('exp-sitename')?.value || 'Site';
-  const color = document.getElementById('exp-color')?.value || '#4C4CF4';
-  const css = generateCSS(color, 'topbar');
-  const parts = new URL(url).pathname.split('/').filter(Boolean);
-  const heroSection = parts.length === 0 ? '' : `
-    <div class="page-hero">
-      <div class="breadcrumb">Home › ${info.title}</div>
-      <h1 class="page-title">${info.title}</h1>
-    </div>`;
-
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${info.title} — ${sitename}</title>
-<style>${css}</style></head>
-<body class="has-topnav">
-  <nav class="topnav"><div class="site-brand"><a href="#">${sitename}</a></div></nav>
-  <div class="page-wrapper">
-    ${heroSection}
-    <main class="main-content"><div class="page-body">${bodyHtml}</div></main>
-    <footer class="site-footer"><div class="footer-bottom" style="max-width:940px;margin:0 auto"><span class="footer-copy">&copy; ${new Date().getFullYear()} ${sitename}</span></div></footer>
-  </div>
-</body></html>`;
-}
-
-function approveCurrent() {
-  if (!currentAIUrl) return;
-  aiResults[currentAIUrl] = { ...(aiResults[currentAIUrl]||{}), approved: true, status: 'done' };
-  renderAIList();
-  closeAIModal();
-}
-
-function regenerateCurrent() {
-  if (!currentAIUrl) return;
-  closeAIModal();
-  generateOnePage(currentAIUrl);
-}
-
-function closeAIModal(e) {
-  if (e && e.target !== document.getElementById('ai-modal')) return;
-  document.getElementById('ai-modal').classList.remove('open');
-  currentAIUrl = null;
-}
-
-function switchAIView(name, el) {
-  document.querySelectorAll('.ai-mtab').forEach(t=>t.classList.remove('active'));
-  if(el) el.classList.add('active');
-  document.getElementById('ai-preview-frame').style.display = name==='preview' ? 'block' : 'none';
-  document.getElementById('ai-code-view').style.display = name==='code' ? 'block' : 'none';
-}
-
-// Override showTab to render AI list when switching to AI tab
-const _origShowTab = showTab;
-function showTab(name, el) {
-  _origShowTab(name, el);
-  if (name === 'ai') renderAIList();
-}
-
-// Override exportStaticSite to use AI content where approved
-const _origExport = exportStaticSite;
-async function exportStaticSite() {
-  const approvedCount = Object.values(aiResults).filter(r=>r.approved).length;
-  if (approvedCount > 0) {
-    // Temporarily patch pages content for approved pages
-    const origContent = {};
-    Object.entries(aiResults).forEach(([url, res]) => {
-      if (res.approved && res.html && pages[url]) {
-        origContent[url] = pages[url].contentHTML;
-        pages[url].contentHTML = res.html;
-      }
-    });
-    await _origExport();
-    // Restore
-    Object.entries(origContent).forEach(([url, html]) => {
-      if (pages[url]) pages[url].contentHTML = html;
-    });
-  } else {
-    await _origExport();
+    openAMPreview(url);
+  }catch(e){
+    aiResults[url]={status:'error',html:null,approved:false};
+    renderAIList();
+    alert('Failed: '+e.message);
   }
 }
+
+function openAMPreview(url){
+  const info=pages[url]||{};const res=aiResults[url]||{};
+  curAIUrl=url;
+  document.getElementById('amtit').textContent=info.title||url;
+  document.getElementById('amurl').textContent=url.replace(baseUrl,'')||'/';
+  const sitename=document.getElementById('exp-sitename')?.value||'Site';
+  const fullHtml=genPageHTML(url,info,sitename,res.html||'<p>No content yet.</p>');
+  document.getElementById('apf').srcdoc=fullHtml;
+  document.getElementById('acv').textContent=res.html||'';
+  switchAV('prev',document.querySelector('.amt'));
+  document.getElementById('am').classList.add('open');
+}
+function switchAV(name,el){
+  document.querySelectorAll('.amt').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.getElementById('apf').style.display=name==='prev'?'block':'none';
+  document.getElementById('acv').style.display=name==='code'?'block':'none';
+}
+function approveCur(){if(!curAIUrl)return;aiResults[curAIUrl]={...(aiResults[curAIUrl]||{}),approved:true,status:'done'};renderAIList();closeAMd();}
+function regenCur(){if(!curAIUrl)return;closeAMd();genOnePage(curAIUrl);}
+function closeAM(e){if(e.target===document.getElementById('am'))closeAMd();}
+function closeAMd(){document.getElementById('am').classList.remove('open');curAIUrl=null;}
+
+// ── HELPERS
+function dl(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();}
 </script>
 </body>
 </html>
