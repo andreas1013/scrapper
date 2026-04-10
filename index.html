@@ -760,7 +760,7 @@ function genPageHTML(url,info,sitename,bodyOverride){
   let content=bodyOverride||info.contentHTML||'<p>Content coming soon.</p>';
   content=content.replace(/<h1[^>]*>.*?<\/h1>/is,'');
   content=content.replace(/href="https?:\/\/[^"]*"/gi,m=>{
-    try{const u=new URL(m.slice(6,-1));if(u.hostname===new URL(baseUrl).hostname){const p=u.pathname.replace(/\/$/,'')||'/';return 'href="'+(p==='/'?'/':p+'/')+'\"';}}`catch{}return m;});
+    try{const u=new URL(m.slice(6,-1));if(u.hostname===new URL(baseUrl).hostname){const p=u.pathname.replace(/\/$/,'')||'/';return 'href="'+(p==='/'?'/':p+'/')+'\"';}}catch{}return m;});
   let crumbs='<a href="/">Home</a>';
   let cPath='';
   parts.forEach((p,i)=>{cPath+='/'+p;if(i<parts.length-1)crumbs+=' › <a href="'+cPath+'/">'+p+'</a>';else crumbs+=' › <span>'+info.title+'</span>';});
