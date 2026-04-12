@@ -178,7 +178,7 @@ footer{text-align:center;padding:.85rem;color:var(--mu);font-size:.7rem;font-fam
 <header>
   <div class="logo">Site<span>Crawler</span></div>
   <div class="tag">Drupal Migration Tool</div>
-  <div class="vtag">v3.5</div>
+  <div class="vtag">v3.6</div>
 </header>
 
 <!-- SETUP -->
@@ -447,6 +447,16 @@ function parsePage(html,pageUrl){
   let contentEl=null;
   for(const sel of CONSELS){const el=doc.querySelector(sel);if(el&&el.textContent.trim().length>50){contentEl=el.cloneNode(true);break;}}
   if(!contentEl)contentEl=doc.body?doc.body.cloneNode(true):doc.createElement('div');
+  // Capture sidebar/quick-facts content BEFORE stripping
+  let sidebarText = '';
+  const sidebarSels = ['.sidebar','.aside','aside','.block-views','[class*="quick"]','[class*="fact"]','.field-type-text-with-summary + *'];
+  sidebarSels.forEach(sel => {
+    doc.querySelectorAll(sel).forEach(el => {
+      const t = el.innerText || el.textContent || '';
+      if(t.trim().length > 20) sidebarText += t.trim() + '\n\n';
+    });
+  });
+
   STRIPSELS.forEach(sel=>contentEl.querySelectorAll(sel).forEach(el=>el.remove()));
   contentEl.querySelectorAll('img[src]').forEach(img=>{try{img.src=new URL(img.getAttribute('src'),pageUrl).href;}catch{}});
   contentEl.querySelectorAll('a[href]').forEach(a=>{try{a.href=new URL(a.getAttribute('href'),pageUrl).href;}catch{}});
@@ -459,7 +469,7 @@ function parsePage(html,pageUrl){
   });
   const headings=[];
   doc.querySelectorAll('h1,h2,h3').forEach(h=>headings.push({level:h.tagName,text:h.textContent.trim()}));
-  return{navLinks:[...navLinks],allLinks:[...allLinks],title:title.slice(0,120),desc,keywords,contentHTML,cleanText,images,headings};
+  return{navLinks:[...navLinks],allLinks:[...allLinks],title:title.slice(0,120),desc,keywords,contentHTML,cleanText,sidebarText,images,headings};
 }
 
 // ── CRAWL
@@ -492,7 +502,7 @@ async function crawlLoop(){
     p.navLinks.forEach(u=>navUrls.add(u));
     const isNav=navUrls.has(url)||navUrls.has(finalUrl);
     pages[url]={title:p.title,desc:p.desc,keywords:p.keywords,depth,parent,isNav,finalUrl,
-      contentHTML:p.contentHTML,cleanText:p.cleanText,images:p.images,headings:p.headings,linkCount:p.allLinks.length};
+      contentHTML:p.contentHTML,cleanText:p.cleanText,sidebarText:p.sidebarText||'',images:p.images,headings:p.headings,linkCount:p.allLinks.length};
     addLog(count,p.title||url,isNav?'nv':'ok');
     const newNav=p.navLinks.filter(u=>!visited.has(u)&&!queue.find(q=>q.url===u));
     const newAll=p.allLinks.filter(u=>!visited.has(u)&&!p.navLinks.includes(u)&&!queue.find(q=>q.url===u));
@@ -878,11 +888,12 @@ async function genOnePage(url){
   aiResults[url]={...(aiResults[url]||{}),status:'generating',approved:false};
   renderAIList();
   const imgs=(info.images||[]).slice(0,6).map((img,i)=>'Image '+(i+1)+': '+img.src+(img.alt?' (alt: '+img.alt+')':'')).join('\n');
-  const prompt='You are rebuilding a website page as clean semantic HTML.\n\nPage title: '+info.title+'\nURL path: '+new URL(url).pathname+'\nMeta description: '+(info.desc||'none')+'\n\nHeadings:\n'+((info.headings||[]).map(h=>h.level+': '+h.text).join('\n')||'none')+'\n\n'+(imgs?'Available images (use these in the content where relevant):\n'+imgs+'\n\n':'')+'Content:\n---\n'+(info.cleanText||'').slice(0,3000)+'\n---\n\nWrite ONLY the inner HTML for the <div class="pb"> content area. Rules:\n- No html/head/body/nav/header/footer tags\n- Use semantic HTML: h2, h3, p, ul, ol, blockquote, table\n- If images are provided above, embed them using <img src="..." alt="..."> placed naturally within the content where they are most relevant. For a main feature image, use style="float:right;margin:0 0 1.5rem 2rem;max-width:45%;border-radius:10px" on the img tag\n- Keep all facts accurate\n- Return only HTML, no markdown, no explanation';
+  const sidebar=info.sidebarText||'';
+  const prompt='You are rebuilding a website page as clean semantic HTML using a 2-column layout when sidebar content exists.\n\nPage title: '+info.title+'\nURL path: '+new URL(url).pathname+'\nMeta description: '+(info.desc||'none')+'\n\nHeadings:\n'+((info.headings||[]).map(h=>h.level+': '+h.text).join('\n')||'none')+'\n\n'+(imgs?'Available images (embed naturally in content):\n'+imgs+'\n\n':'')+(sidebar?'Sidebar / Quick Facts content (render as a styled aside panel on the right):\n---\n'+sidebar.slice(0,1500)+'\n---\n\n':'')+'Main content:\n---\n'+(info.cleanText||'').slice(0,6000)+'\n---\n\nWrite ONLY the inner HTML for the <div class="pb"> content area. Rules:\n- No html/head/body/nav/header/footer tags\n- Use semantic HTML: h2, h3, p, ul, ol, blockquote, table\n- If sidebar content exists, wrap the layout in: <div style="display:grid;grid-template-columns:1fr 300px;gap:2rem;align-items:start"> with the main content in the first column and an <aside style="background:#e8f5f0;border-radius:12px;padding:1.5rem;position:sticky;top:80px"> for the Quick Facts panel\n- Embed images using <img src="..." alt="..."> placed naturally. Feature image: style="float:right;margin:0 0 1.5rem 2rem;max-width:45%;border-radius:10px"\n- Keep ALL facts accurate and include ALL content — do not truncate\n- Return only HTML, no markdown, no explanation';
   try{
     const wUrl=document.getElementById('worker-url').value.trim().replace(/\/$/,'');
     const res=await fetch(wUrl+'/ai',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':apiKey},
-      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2048,messages:[{role:'user',content:prompt}]}),
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:4096,messages:[{role:'user',content:prompt}]}),
       signal:AbortSignal.timeout(30000)});
     const data=await res.json();
     if(data.type==='error')throw new Error(data.error?.message||'API error');
