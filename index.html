@@ -178,7 +178,7 @@ footer{text-align:center;padding:.85rem;color:var(--mu);font-size:.7rem;font-fam
 <header>
   <div class="logo">Site<span>Crawler</span></div>
   <div class="tag">Drupal Migration Tool</div>
-  <div class="vtag">v3.3</div>
+  <div class="vtag">v3.4</div>
 </header>
 
 <!-- SETUP -->
@@ -728,26 +728,59 @@ body{font-family:var(--fn);background:var(--bg);color:var(--tx);line-height:1.75
 }`;
 }
 
-// ── NAV BUILDER
+// ── NAV BUILDER (hardcoded from original site structure)
+const NAV_STRUCTURE = [
+  {label:'Home', path:'/'},
+  {label:'Pregnancy', path:'/pregnancy/', children:[
+    {label:"Baby's Development", path:'/pregnancy/babys-development/'},
+    {label:'First Trimester', path:'/pregnancy/first-trimester/'},
+    {label:'Second Trimester', path:'/pregnancy/second-trimester/'},
+    {label:'Third Trimester', path:'/pregnancy/third-trimester/'},
+    {label:'Pregnancy Topics', path:'/pregnancy/pregnancy-topics/'},
+    {label:'Pregnancy Classes', path:'/pregnancy/pregnancy-classes/'},
+  ]},
+  {label:'Birth', path:'/birth/', children:[
+    {label:'Vaginal Birth', path:'/birth/vaginal-birth/'},
+    {label:'Caesarean Birth', path:'/birth/caesarean-birth/'},
+    {label:'Where Can I Have My Baby?', path:'/birth/where-can-i-have-my-baby/'},
+    {label:'Who Can Look After Me?', path:'/birth/who-can-look-after-me/'},
+    {label:'What to Expect', path:'/birth/what-to-expect/'},
+    {label:'Birth Topics', path:'/birth/birth-topics/'},
+    {label:'Birth Classes', path:'/birth/birth-classes/'},
+    {label:'Doula Support', path:'/birth/doula-support/'},
+  ]},
+  {label:'Parenting', path:'/parenting/', children:[
+    {label:'Parenting Topics', path:'/parenting/parenting-topics/'},
+    {label:'Classes in Pregnancy', path:'/parenting/classes-in-pregnancy/'},
+    {label:'Postnatal Doula Support', path:'/parenting/postnatal-doula-support/'},
+    {label:'Classes in Early Parenting', path:'/parenting/classes-in-early-parenting/'},
+    {label:'Parenting Courses', path:'/parenting/parenting-courses/'},
+    {label:'Your Developing Child', path:'/parenting/your-developing-child/'},
+  ]},
+  {label:'Classes', path:'/classes/', children:[
+    {label:'Antenatal Classes', path:'/classes/antenatal-classes/'},
+    {label:'Postnatal Classes', path:'/classes/postnatal-classes/'},
+    {label:'Parenting Courses', path:'/classes/parenting-courses/'},
+    {label:'Find a Class', path:'/classes/find-a-class/'},
+  ]},
+  {label:'Registration', path:'/webform/registration/'},
+  {label:'Blog', path:'/blog/'},
+];
+
 function buildNav(sitename,currentUrl){
-  const topItems=Object.entries(pages).filter(([url,info])=>{
-    try{const parts=new URL(url).pathname.split('/').filter(Boolean);return parts.length<=1&&(info.isNav||navUrls.has(url));}catch{return false;}
-  });
-  const items=topItems.map(([url,info])=>{
-    const topPath=new URL(url).pathname.replace(/\/$/,'')||'';
-    const children=Object.entries(pages).filter(([cu])=>{
-      try{const cp=new URL(cu).pathname.replace(/\/$/,'');const cp2=cp.split('/').filter(Boolean);const tp2=topPath.split('/').filter(Boolean);
-      return tp2.length>0&&cp.startsWith(topPath+'/')&&cp2.length===tp2.length+1;}catch{return false;}
-    });
-    const href=topPath?topPath+'/':'/';
-    const active=url===currentUrl?' active':'';
-    if(children.length>0){
-      const cl=children.map(([cu,ci])=>{const cp=new URL(cu).pathname.replace(/\/$/,'');return '<li><a href="'+cp+'/"'+(cu===currentUrl?' class="active"':'')+'>'+ci.title+'</a></li>';}).join('');
-      return '<li class="hd"><a href="'+href+'" class="'+active+'">'+info.title+'</a><ul class="drop">'+cl+'</ul></li>';
+  const curPath=currentUrl?new URL(currentUrl).pathname:'';
+  const items=NAV_STRUCTURE.map(item=>{
+    const isActive=curPath===item.path||curPath.startsWith(item.path==='/'?'/_never_':item.path);
+    if(item.children&&item.children.length){
+      const drops=item.children.map(ch=>{
+        const chActive=curPath===ch.path||curPath.startsWith(ch.path);
+        return '<li><a href="'+ch.path+'"'+(chActive?' class="active"':'')+'>'+ch.label+'</a></li>';
+      }).join('');
+      return '<li class="hd"><a href="'+item.path+'"'+(isActive?' class="active"':'')+'>'+item.label+'</a><ul class="drop">'+drops+'</ul></li>';
     }
-    return '<li><a href="'+href+'" class="'+active+'">'+info.title+'</a></li>';
+    return '<li><a href="'+item.path+'"'+(isActive?' class="active"':'')+'>'+item.label+'</a></li>';
   }).join('');
-  return '<nav class="topnav"><div class="brand"><a href="/">'+sitename+'</a></div><ul class="nav-list">'+items+'</ul><button class="ntog" onclick="this.closest(\'nav\').classList.toggle(\'open\')">&#9776;</button></nav>';
+  return '<nav class="topnav"><div class="brand"><a href="/">'+sitename+'</a></div><ul class="nav-list">'+items+'</ul><button class="ntog" onclick="this.closest('nav').classList.toggle('open')">&#9776;</button></nav>';
 }
 
 // ── PAGE GENERATOR
