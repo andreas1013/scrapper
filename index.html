@@ -178,7 +178,7 @@ footer{text-align:center;padding:.85rem;color:var(--mu);font-size:.7rem;font-fam
 <header>
   <div class="logo">Site<span>Crawler</span></div>
   <div class="tag">Drupal Migration Tool</div>
-  <div class="vtag">v3.4</div>
+  <div class="vtag">v3.5</div>
 </header>
 
 <!-- SETUP -->
@@ -780,7 +780,7 @@ function buildNav(sitename,currentUrl){
     }
     return '<li><a href="'+item.path+'"'+(isActive?' class="active"':'')+'>'+item.label+'</a></li>';
   }).join('');
-  return '<nav class="topnav"><div class="brand"><a href="/">'+sitename+'</a></div><ul class="nav-list">'+items+'</ul><button class="ntog" onclick="this.closest('nav').classList.toggle('open')">&#9776;</button></nav>';
+  return '<nav class="topnav"><div class="brand"><a href="/">'+sitename+'</a></div><ul class="nav-list">'+items+'</ul><button class="ntog" onclick="this.closest(&quot;nav&quot;).classList.toggle(&quot;open&quot;)">&#9776;</button></nav>';
 }
 
 // ── PAGE GENERATOR
