@@ -178,7 +178,7 @@ footer{text-align:center;padding:.85rem;color:var(--mu);font-size:.7rem;font-fam
 <header>
   <div class="logo">Site<span>Crawler</span></div>
   <div class="tag">Drupal Migration Tool</div>
-  <div class="vtag">v3.6</div>
+  <div class="vtag">v3.7</div>
 </header>
 
 <!-- SETUP -->
@@ -686,7 +686,7 @@ body{font-family:var(--fn);background:var(--bg);color:var(--tx);line-height:1.75
 .drop li a:hover{background:rgba(76,76,244,.07);color:var(--primary);padding-left:1.4rem}
 .ntog{display:none;background:none;border:1px solid var(--bd);color:var(--tx);padding:.35rem .65rem;border-radius:var(--r2);cursor:pointer;font-size:1rem;margin-left:auto}
 .has-topnav .pw{padding-top:var(--nav-h)}
-.page-hero{background:var(--grad);padding:3.5rem 2rem 3rem;color:white;position:relative;overflow:hidden}
+.page-hero{background:var(--grad);padding:3.5rem 2rem 3rem;color:white;position:relative}
 .page-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(255,255,255,.1),transparent 60%);pointer-events:none}
 .page-hero .bc{color:rgba(255,255,255,.6);font-size:.8rem;margin-bottom:.75rem}
 .page-hero .bc a{color:rgba(255,255,255,.75);text-decoration:none}
@@ -790,7 +790,7 @@ function buildNav(sitename,currentUrl){
     }
     return '<li><a href="'+item.path+'"'+(isActive?' class="active"':'')+'>'+item.label+'</a></li>';
   }).join('');
-  return '<nav class="topnav"><div class="brand"><a href="/">'+sitename+'</a></div><ul class="nav-list">'+items+'</ul><button class="ntog" onclick="this.closest(&quot;nav&quot;).classList.toggle(&quot;open&quot;)">&#9776;</button></nav>';
+  return '<nav class="topnav"><div class="brand"><a href="/"><img src="https://www.pregnancyparenting.org.au/sites/default/files/ppa.png" alt="'+sitename+'" style="height:44px;width:auto;display:block"></a></div><ul class="nav-list">'+items+'</ul><button class="ntog" onclick="this.closest(&quot;nav&quot;).classList.toggle(&quot;open&quot;)">&#9776;</button></nav>';
 }
 
 // ── PAGE GENERATOR
@@ -802,6 +802,11 @@ function genPageHTML(url,info,sitename,bodyOverride){
   const yr=new Date().getFullYear();
   let content=bodyOverride||info.contentHTML||'<p>Content coming soon.</p>';
   content=content.replace(/<h1[^>]*>.*?<\/h1>/is,'');
+  // Strip Drupal artifacts
+  content=content.replace(/<[^>]*(class|id)="[^"]*(you-are-here|breadcrumb|skip-link|skip-nav|contextual|toolbar|messages|tabs--primary)[^"]*"[^>]*>[\s\S]*?<\/(?:div|nav|ul|section|p)>/gi,'');
+  content=content.replace(/<p[^>]*>\s*You are here[\s\S]*?<\/p>/gi,'');
+  content=content.replace(/<[^>]*>\s*You are here\s*<\/[^>]+>/gi,'');
+  content=content.replace(/You are here/gi,'');
 
   // If no images in content but page has scraped images, inject featured image
   if(!bodyOverride && !/\<img/i.test(content) && info.images && info.images.length>0){
@@ -813,6 +818,9 @@ function genPageHTML(url,info,sitename,bodyOverride){
     else{content=imgHtml+content;}
   }
 
+  // Strip "You are here" Drupal artifact from rendered content
+  content=content.replace(/<\w[^>]*>\s*You are here\s*<\/\w+>/gi,'');
+  content=content.replace(/<[^>]+class="[^"]*breadcrumb[^"]*"[^>]*>[\s\S]*?<\/(?:div|nav|ol|ul)>/gi,'');
   content=content.replace(/href="https?:\/\/[^"]*"/gi,m=>{
     try{const u=new URL(m.slice(6,-1));if(u.hostname===new URL(baseUrl).hostname){const p=u.pathname.replace(/\/$/,'')||'/';return 'href="'+(p==='/'?'/':p+'/')+'\"';}}catch{}return m;});
   let crumbs='<a href="/">Home</a>';
